@@ -3,7 +3,9 @@ Simple TC Solver
 ################
 
 UNDER ACTIVE DEVELOPMENT.
-CI will be added soon, and the documentation will be enriched in the near future.
+
+CI will be added soon, and the documentation will be enriched in the near future in order to clearly tell why and how things are treated.
+Also implementations are partially incomplete, in particular 1. the implicit treatment of the diffusive terms in the azimuthal direction and 2. the computation of the dissipation rate are under construction (Cartesian version is directly used).
 
 |License|_ |LastCommit|_
 
