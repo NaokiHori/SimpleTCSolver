@@ -48,12 +48,19 @@ Please check the README of `SimpleNSSolver <https://github.com/NaokiHori/SimpleN
 .. code-block::
 
    $ make clean
-   $ make output # just in case, to create directories for artifacts
+   $ make output # create directories for artifacts
    $ make all    # compile
    $ sh exec.sh  # change parameters if needed
 
-.. image:: https://github.com/NaokiHori/SimpleTCSolver/blob/artifacts/result.png
+Simulations would dump the whole flow field and some log files, whose visualisation leads
+
+.. image:: https://naokihori.github.io/SimpleTCSolver/_images/result.png
    :width: 100%
+
+Here the averaged azimuthal velocity profile is visualised (left), which shows a disturbed flow field (Taylor vortices).
+Also the normalised torques measured on the inner and outer cylinder walls are plotted (right), which should agree to the literature result (e.g., Ostilla et al., J. Fluid Mech. (719), 2013).
+
+Please refer to `the workflow <https://github.com/NaokiHori/SimpleTCSolver/blob/main/.github/workflows/ci.yml>`_ to see how this figure is obtained.
 
 *************
 Documentation
