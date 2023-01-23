@@ -209,6 +209,10 @@ Implementation
    \frac{1}{Re}
    \second
 
+.. myliteralinclude:: /../../src/domain/coordinate.c
+   :language: c
+   :tag: uzdify
+
 .. myliteralinclude:: /../../src/fluid/compute_rhs/uz.c
    :language: c
    :tag: diffused in t
@@ -218,6 +222,10 @@ Implementation
    +
    \frac{1}{Re}
    \third
+
+.. myliteralinclude:: /../../src/domain/coordinate.c
+   :language: c
+   :tag: uzdifz
 
 .. myliteralinclude:: /../../src/fluid/compute_rhs/uz.c
    :language: c

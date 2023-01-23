@@ -171,13 +171,20 @@ domain_t *domain_init(void){
   double *xc  = allocate_and_init_xc (glisize, xf);
   double *dxf = allocate_and_init_dxf(glisize, xf);
   double *dxc = allocate_and_init_dxc(glisize, xc);
-  laplace_t *uxdifx = allocate_and_init_uxdifx(glisize, xf, xc, dxf, dxc);
-  laplace_t *uydifx = allocate_and_init_uydifx(glisize, xf, xc, dxf, dxc);
-  laplace_t *uzdifx = allocate_and_init_uzdifx(glisize, xf, xc, dxf, dxc);
   /* ! grid sizes in homogeneous directions ! 3 ! */
   const double dx = lx / glisize;
   const double dy = ly / gljsize;
   const double dz = lz / glksize;
+  // discrete Laplace operators
+  laplace_t *uxdifx = allocate_and_init_uxdifx(glisize, xf, xc, dxf, dxc);
+  laplace_t *uydifx = allocate_and_init_uydifx(glisize, xf, xc, dxf, dxc);
+  laplace_t *uzdifx = allocate_and_init_uzdifx(glisize, xf, xc, dxf, dxc);
+  laplace_t *uxdify = allocate_and_init_uxdify(glisize, xf, dy);
+  laplace_t *uydify = allocate_and_init_uydify(glisize, xc, dy);
+  laplace_t *uzdify = allocate_and_init_uzdify(glisize, xc, dy);
+  laplace_t  uxdifz =              init_uxdifz(dz);
+  laplace_t  uydifz =              init_uydifz(dz);
+  laplace_t  uzdifz =              init_uzdifz(dz);
   /* ! allocate and assign members ! 27 ! */
   // allocate
   domain_t *domain = common_calloc(1, sizeof(domain_t));
@@ -206,6 +213,12 @@ domain_t *domain_init(void){
   domain->uxdifx = uxdifx;
   domain->uydifx = uydifx;
   domain->uzdifx = uzdifx;
+  domain->uxdify = uxdify;
+  domain->uydify = uydify;
+  domain->uzdify = uzdify;
+  domain->uxdifz = uxdifz;
+  domain->uydifz = uydifz;
+  domain->uzdifz = uzdifz;
   domain->dx = dx;
   domain->dy = dy;
   domain->dz = dz;

@@ -29,9 +29,15 @@ def attach_footer(f, name):
 class VectorType(enum.Enum):
     XFACE   = enum.auto()
     XCENTER = enum.auto()
-    UXDIF   = enum.auto()
-    UYDIF   = enum.auto()
-    UZDIF   = enum.auto()
+    UXDIFX  = enum.auto() # [2:isize]
+    UYDIFX  = enum.auto() # [1:isize]
+    UZDIFX  = enum.auto() # [1:isize]
+    UXDIFY  = enum.auto() # [2:isize]
+    UYDIFY  = enum.auto() # [1:isize]
+    UZDIFY  = enum.auto() # [1:isize]
+    UXDIFZ  = enum.auto() # constant, not needed
+    UYDIFZ  = enum.auto() # constant, not needed
+    UZDIFZ  = enum.auto() # constant, not needed
 
 def generate_grid_1d(f, name, vector_type):
     # prepare macros for one-dimensional vector
@@ -44,15 +50,39 @@ def generate_grid_1d(f, name, vector_type):
     elif vector_type == VectorType.XCENTER:
         size = "isize+2"
         index = "N"
-    elif vector_type == VectorType.UXDIF:
+    elif vector_type == VectorType.UXDIFX:
+        # [2:isize]
         size = "isize-1"
         index = "N-2"
-    elif vector_type == VectorType.UYDIF:
+    elif vector_type == VectorType.UYDIFX:
+        # [1:isize]
         size = "isize"
         index = "N-1"
-    elif vector_type == VectorType.UZDIF:
+    elif vector_type == VectorType.UZDIFX:
+        # [1:isize]
         size = "isize"
         index = "N-1"
+    elif vector_type == VectorType.UXDIFY:
+        # [2:isize]
+        size = "isize"
+        index = "N-2"
+    elif vector_type == VectorType.UYDIFY:
+        # [1:isize]
+        size = "isize"
+        index = "N-1"
+    elif vector_type == VectorType.UZDIFY:
+        # [1:isize]
+        size = "isize"
+        index = "N-1"
+    elif vector_type == VectorType.UXDIFZ:
+        print("this is not needed:", vector_type)
+        return
+    elif vector_type == VectorType.UYDIFZ:
+        print("this is not needed:", vector_type)
+        return
+    elif vector_type == VectorType.UZDIFZ:
+        print("this is not needed:", vector_type)
+        return
     else:
         print("unknown vector type:", vector_type)
         return
@@ -195,9 +225,12 @@ if __name__ == "__main__":
         generate_grid_1d(f, "xc",  VectorType.XCENTER)
         generate_grid_1d(f, "dxf", VectorType.XFACE  )
         generate_grid_1d(f, "dxc", VectorType.XCENTER)
-        generate_grid_1d(f, "uxdifx", VectorType.UXDIF)
-        generate_grid_1d(f, "uydifx", VectorType.UYDIF)
-        generate_grid_1d(f, "uzdifx", VectorType.UZDIF)
+        generate_grid_1d(f, "uxdifx", VectorType.UXDIFX)
+        generate_grid_1d(f, "uydifx", VectorType.UYDIFX)
+        generate_grid_1d(f, "uzdifx", VectorType.UZDIFX)
+        generate_grid_1d(f, "uxdify", VectorType.UXDIFY)
+        generate_grid_1d(f, "uydify", VectorType.UYDIFY)
+        generate_grid_1d(f, "uzdify", VectorType.UZDIFY)
         attach_footer(f, "domain")
     # velocity, pressure, scalar potential, and source terms of RK
     with open("fluid.h", "w", encoding="utf-8") as f:

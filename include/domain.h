@@ -4,7 +4,12 @@
 #include "arrays/domain.h"
 #include "sdecomp.h"
 
-
+// struct to store discrete Laplace operators
+// d^2q / dx^2
+//   \approx "u" q_{n+3/2} + "c" q_{n+1/2} + "l" q_{n-1/2}
+//   or
+//   \approx "u" q_{n+1  } + "c" q_{n    } + "l" q_{n-1  }
+//   (depending on where q are positioned, face or center)
 typedef struct {
   double l;
   double c;
@@ -33,6 +38,8 @@ typedef struct {
   double *dxf, *dxc;
   double dx, dy, dz;
   laplace_t *uxdifx, *uydifx, *uzdifx;
+  laplace_t *uxdify, *uydify, *uzdify;
+  laplace_t  uxdifz,  uydifz,  uzdifz;
 } domain_t;
 
 

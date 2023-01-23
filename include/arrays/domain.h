@@ -31,4 +31,16 @@
 #define UZDIFX_SIZE (isize)
 #define UZDIFX(N) (uzdifx[N-1])
 
+/* uxdify */
+#define UXDIFY_SIZE (isize)
+#define UXDIFY(N) (uxdify[N-2])
+
+/* uydify */
+#define UYDIFY_SIZE (isize)
+#define UYDIFY(N) (uydify[N-1])
+
+/* uzdify */
+#define UZDIFY_SIZE (isize)
+#define UZDIFY(N) (uzdify[N-1])
+
 #endif // ARRAYS_{name}_H

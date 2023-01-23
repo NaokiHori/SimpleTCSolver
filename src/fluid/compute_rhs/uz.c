@@ -25,6 +25,8 @@ int compute_rhs_uz(const domain_t * restrict domain, const int rkstep, fluid_t *
   const double * restrict xc = domain->xc;
   const double * restrict dxf = domain->dxf;
   const laplace_t * restrict uzdifx = domain->uzdifx;
+  const laplace_t * restrict uzdify = domain->uzdify;
+  const laplace_t            uzdifz = domain->uzdifz;
   const double dy = domain->dy;
   const double dz = domain->dz;
   const double * restrict ux = fluid->ux;
@@ -88,33 +90,24 @@ int compute_rhs_uz(const domain_t * restrict domain, const int rkstep, fluid_t *
           );
         }
         /* diffusion */
-        /* ! diffused in r ! 8 ! */
-        double difx;
-        {
-          difx = + 1. / Re * (
-              + UZDIFX(i).l * UZ(i-1, j  , k  )
-              + UZDIFX(i).c * UZ(i  , j  , k  )
-              + UZDIFX(i).u * UZ(i+1, j  , k  )
-          );
-        }
-        /* ! diffused in t ! 8 ! */
-        double dify;
-        {
-          dify = + 1. / Re / XC(i  ) / XC(i  ) / dy / dy * (
-              + 1. * UZ(i  , j-1, k  )
-              - 2. * UZ(i  , j  , k  )
-              + 1. * UZ(i  , j+1, k  )
-          );
-        }
-        /* ! diffused in z ! 8 ! */
-        double difz;
-        {
-          difz = + 1. / Re / dz / dz * (
-              + 1. * UZ(i  , j  , k-1)
-              - 2. * UZ(i  , j  , k  )
-              + 1. * UZ(i  , j  , k+1)
-          );
-        }
+        /* ! diffused in r ! 5 ! */
+        const double difx = + 1. / Re * (
+            + UZDIFX(i).l * UZ(i-1, j  , k  )
+            + UZDIFX(i).c * UZ(i  , j  , k  )
+            + UZDIFX(i).u * UZ(i+1, j  , k  )
+        );
+        /* ! diffused in t ! 5 ! */
+        const double dify = + 1. / Re * (
+            + UZDIFY(i).l * UZ(i  , j-1, k  )
+            + UZDIFY(i).c * UZ(i  , j  , k  )
+            + UZDIFY(i).u * UZ(i  , j+1, k  )
+        );
+        /* ! diffused in z ! 5 ! */
+        const double difz = + 1. / Re * (
+            + uzdifz.l    * UZ(i  , j  , k-1)
+            + uzdifz.c    * UZ(i  , j  , k  )
+            + uzdifz.u    * UZ(i  , j  , k+1)
+        );
         double pre;
         {
           const double p_zm = P(i  , j  , k-1);

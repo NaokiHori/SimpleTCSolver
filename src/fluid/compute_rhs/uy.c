@@ -25,6 +25,8 @@ int compute_rhs_uy(const domain_t * restrict domain, const int rkstep, fluid_t *
   const double * restrict xc = domain->xc;
   const double * restrict dxf = domain->dxf;
   const laplace_t * restrict uydifx = domain->uydifx;
+  const laplace_t * restrict uydify = domain->uydify;
+  const laplace_t            uydifz = domain->uydifz;
   const double dy = domain->dy;
   const double dz = domain->dz;
   const double * restrict ux = fluid->ux;
@@ -106,33 +108,24 @@ int compute_rhs_uy(const domain_t * restrict domain, const int rkstep, fluid_t *
           );
         }
         /* diffusion */
-        /* ! diffused in r ! 8 ! */
-        double difx;
-        {
-          difx = + 1. / Re * (
-              + UYDIFX(i).l * UY(i-1, j  , k  )
-              + UYDIFX(i).c * UY(i  , j  , k  )
-              + UYDIFX(i).u * UY(i+1, j  , k  )
-          );
-        }
-        /* ! diffused in t ! 8 ! */
-        double dify;
-        {
-          dify = + 1. / Re / XC(i  ) / XC(i  ) / dy / dy * (
-              + 1. * UY(i  , j-1, k  )
-              - 2. * UY(i  , j  , k  )
-              + 1. * UY(i  , j+1, k  )
-          );
-        }
-        /* ! diffused in z ! 8 ! */
-        double difz;
-        {
-          difz = + 1. / Re / dz / dz * (
-              + 1. * UY(i  , j  , k-1)
-              - 2. * UY(i  , j  , k  )
-              + 1. * UY(i  , j  , k+1)
-          );
-        }
+        /* ! diffused in r ! 5 ! */
+        const double difx = + 1. / Re * (
+            + UYDIFX(i).l * UY(i-1, j  , k  )
+            + UYDIFX(i).c * UY(i  , j  , k  )
+            + UYDIFX(i).u * UY(i+1, j  , k  )
+        );
+        /* ! diffused in t ! 5 ! */
+        const double dify = + 1. / Re * (
+            + UYDIFY(i).l * UY(i  , j-1, k  )
+            + UYDIFY(i).c * UY(i  , j  , k  )
+            + UYDIFY(i).u * UY(i  , j+1, k  )
+        );
+        /* ! diffused in z ! 5 ! */
+        const double difz = + 1. / Re * (
+            + uydifz.l    * UY(i  , j  , k-1)
+            + uydifz.c    * UY(i  , j  , k  )
+            + uydifz.u    * UY(i  , j  , k+1)
+        );
         /* ! additional diffusive term 0 ! 13 ! */
         double difa0;
         {

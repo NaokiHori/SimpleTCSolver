@@ -239,6 +239,10 @@ Implementation
    \frac{1}{Re}
    \second
 
+.. myliteralinclude:: /../../src/domain/coordinate.c
+   :language: c
+   :tag: uydify
+
 .. myliteralinclude:: /../../src/fluid/compute_rhs/uy.c
    :language: c
    :tag: diffused in t
@@ -248,6 +252,10 @@ Implementation
    \signthird
    \frac{1}{Re}
    \third
+
+.. myliteralinclude:: /../../src/domain/coordinate.c
+   :language: c
+   :tag: uydifz
 
 .. myliteralinclude:: /../../src/fluid/compute_rhs/uy.c
    :language: c

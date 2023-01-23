@@ -26,6 +26,8 @@ int compute_rhs_ux(const domain_t * restrict domain, const int rkstep, fluid_t *
   const double * restrict dxf = domain->dxf;
   const double * restrict dxc = domain->dxc;
   const laplace_t * restrict uxdifx = domain->uxdifx;
+  const laplace_t * restrict uxdify = domain->uxdify;
+  const laplace_t            uxdifz = domain->uxdifz;
   const double dy = domain->dy;
   const double dz = domain->dz;
   const double * restrict ux = fluid->ux;
@@ -103,33 +105,26 @@ int compute_rhs_ux(const domain_t * restrict domain, const int rkstep, fluid_t *
           );
         }
         /* diffusion */
-        /* ! diffused in r ! 8 ! */
-        double difx;
-        {
-          difx = + 1. / Re * (
-              + UXDIFX(i).l * UX(i-1, j  , k  )
-              + UXDIFX(i).c * UX(i  , j  , k  )
-              + UXDIFX(i).u * UX(i+1, j  , k  )
-          );
-        }
-        /* ! diffused in t ! 8 ! */
-        double dify;
-        {
-          dify = + 1. / Re / XF(i  ) / XF(i  ) / dy / dy * (
-              + 1. * UX(i  , j-1, k  )
-              - 2. * UX(i  , j  , k  )
-              + 1. * UX(i  , j+1, k  )
-          );
-        }
-        /* ! diffused in z ! 8 ! */
-        double difz;
-        {
-          difz = + 1. / Re / dz / dz * (
-              + 1. * UX(i  , j  , k-1)
-              - 2. * UX(i  , j  , k  )
-              + 1. * UX(i  , j  , k+1)
-          );
-        }
+        /* ! diffused in r ! 5 ! */
+        const double difx = + 1. / Re * (
+            + UXDIFX(i).l * UX(i-1, j  , k  )
+            + UXDIFX(i).c * UX(i  , j  , k  )
+            + UXDIFX(i).u * UX(i+1, j  , k  )
+        );
+        /* ! diffused in t ! 7 ! */
+        // Laplace operator differs in r direction,
+        //   so "i", NOT "j" for UXDIFY
+        const double dify = + 1. / Re * (
+            + UXDIFY(i).l * UX(i  , j-1, k  )
+            + UXDIFY(i).c * UX(i  , j  , k  )
+            + UXDIFY(i).u * UX(i  , j+1, k  )
+        );
+        /* ! diffused in z ! 5 ! */
+        const double difz = + 1. / Re * (
+            + uxdifz.l    * UX(i  , j  , k-1)
+            + uxdifz.c    * UX(i  , j  , k  )
+            + uxdifz.u    * UX(i  , j  , k+1)
+        );
         /* ! additional diffusive term 0 ! 13 ! */
         double difa0;
         {
