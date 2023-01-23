@@ -1,6 +1,7 @@
 #include <math.h>
 #include <float.h>
 #include <mpi.h>
+#include "common.h"
 #include "config.h"
 #include "domain.h"
 #include "fluid.h"

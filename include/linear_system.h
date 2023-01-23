@@ -2,6 +2,7 @@
 #define LINEAR_SYSTEM_H
 
 #include "sdecomp.h"
+#include "common.h"
 #include "domain.h"
 
 
