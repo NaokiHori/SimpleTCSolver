@@ -1,0 +1,69 @@
+name: Documentation
+
+on:
+
+  push:
+    branches:
+      - main
+    paths:
+      - include/**
+      - src/**
+      - docs/**
+      - .github/workflows/documentation.yml
+
+jobs:
+
+  build-doc:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+        with:
+          repository: 'NaokiHori/SimpleTCSolver'
+          ref: ${{ github.ref_name }}
+      - name: Build documentation using Sphinx
+        run: |
+          echo "cd docs && make html" > sphinx.sh
+          docker run \
+            --rm \
+            --volume ${PWD}:/project \
+            --workdir /project \
+            sphinxdoc/sphinx:latest \
+            /bin/bash sphinx.sh
+      - name: Upload HTML artifacts
+        uses: actions/upload-artifact@main
+        with:
+          name: DocHTML
+          path: docs/build/html
+
+  deploy-doc:
+    name: Deploy documentation
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: [build-doc]
+    steps:
+      - name: Download HTML artifacts
+        uses: actions/download-artifact@main
+        with:
+          name: DocHTML
+          path: docs/build/html
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@main
+      - name: Upload HTML
+        uses: actions/upload-pages-artifact@main
+        with:
+          path: docs/build/html
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@main
+
