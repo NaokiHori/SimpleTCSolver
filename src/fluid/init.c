@@ -161,7 +161,7 @@ static int init(const domain_t * restrict domain, fluid_t * restrict fluid){
     for(int k = 1; k <= ksize; k++){
       for(int j = 1; j <= jsize; j++){
         for(int i = 2; i <= isize; i++){
-          UX(i, j, k) = -0.5+1.*rand()/RAND_MAX;
+          UX(i, j, k) = - 0.5 + rand() / (RAND_MAX + 1.);
         }
       }
     }
@@ -187,7 +187,7 @@ static int init(const domain_t * restrict domain, fluid_t * restrict fluid){
     for(int k = 1; k <= ksize; k++){
       for(int j = 1; j <= jsize; j++){
         for(int i = 1; i <= isize; i++){
-          UZ(i, j, k) = -0.5+1.*rand()/RAND_MAX;
+          UZ(i, j, k) = - 0.5 + rand() / (RAND_MAX + 1.);
         }
       }
     }
@@ -200,7 +200,7 @@ static int init(const domain_t * restrict domain, fluid_t * restrict fluid){
     for(int k = 1; k <= ksize; k++){
       for(int j = 1; j <= jsize; j++){
         for(int i = 1; i <= isize; i++){
-          P(i, j, k) = -0.5+1.*rand()/RAND_MAX;
+          P(i, j, k) = - 0.5 + rand() / (RAND_MAX + 1.);
         }
       }
     }

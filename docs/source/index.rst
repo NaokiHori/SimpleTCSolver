@@ -11,5 +11,6 @@ SimpleTCSolver
 
    derivation/index
    implementation/index
+   test/index
    references
 

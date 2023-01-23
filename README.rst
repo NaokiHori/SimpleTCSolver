@@ -4,13 +4,17 @@ Simple TC Solver
 
 UNDER ACTIVE DEVELOPMENT.
 
-CI will be added soon, and the documentation will be enriched in the near future in order to clearly tell why and how things are treated.
+More rigorous CI will be added soon, and the documentation will be enriched in the near future in order to clearly tell why and how things are treated.
+
 Also implementations are partially incomplete, in particular 1. the implicit treatment of the diffusive terms in the azimuthal direction and 2. the computation of the dissipation rate are under construction (Cartesian version is directly used).
 
-|License|_ |LastCommit|_
+|License|_ |CI|_ |LastCommit|_
 
 .. |License| image:: https://img.shields.io/github/license/NaokiHori/SimpleTCSolver
 .. _License: https://opensource.org/licenses/MIT
+
+.. |CI| image:: https://github.com/NaokiHori/SimpleTCSolver/actions/workflows/ci.yml/badge.svg
+.. _CI: https://github.com/NaokiHori/SimpleTCSolver/actions/workflows/ci.yml
 
 .. |LastCommit| image:: https://img.shields.io/github/last-commit/NaokiHori/SimpleTCSolver/main
 .. _LastCommit: https://github.com/NaokiHori/SimpleTCSolver/commits/main
@@ -47,6 +51,9 @@ Please check the README of `SimpleNSSolver <https://github.com/NaokiHori/SimpleN
    $ make output # just in case, to create directories for artifacts
    $ make all    # compile
    $ sh exec.sh  # change parameters if needed
+
+.. image:: https://github.com/NaokiHori/SimpleTCSolver/blob/artifacts/result.png
+   :width: 100%
 
 *************
 Documentation

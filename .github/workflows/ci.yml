@@ -1,0 +1,190 @@
+name: CI
+
+on:
+
+  push:
+    branches:
+      - main
+    paths:
+      - src/**
+      - include/**
+      - docs/**
+      - .github/workflows/**
+
+jobs:
+
+  build-and-execute:
+    name: Build library and try stand-alone run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+        with:
+          repository: 'NaokiHori/SimpleTCSolver'
+          ref: ${{ github.ref_name }}
+      - name: Install dependencies
+        run: |
+          sudo apt-get -y update && \
+          sudo apt-get -y install make libopenmpi-dev libfftw3-dev
+      - name: Compile
+        run: |
+          make output
+          make all
+      - name: Run with higher Reynolds number to trigger instability
+        run: |
+          restart_sim=false \
+          timemax=1.0e+2 \
+          wtimemax=6.0e+2 \
+          log_rate=5.0e-1 \
+          log_after=0.0e+0 \
+          save_rate=5.0e+1 \
+          save_after=0.0e+0 \
+          stat_rate=1.0e-1 \
+          stat_after=1.0e+2 \
+          lx=1.0e+0 \
+          ly=1.5707963267948966 \
+          lz=2.0e+0 \
+          glisize=32 \
+          gljsize=16 \
+          glksize=32 \
+          use_stretched_grid=true \
+          implicitx=true \
+          implicity=false \
+          implicitz=false \
+          coef_dt_adv=0.95 \
+          coef_dt_dif=0.95 \
+          Re=160. \
+          mpirun -n 2 --oversubscribe ./a.out
+      - name: Restart with lower Reynolds number to compare with literature
+        run: |
+          restart_sim=true \
+          restart_dir=$(find output/save -type d | sort | tail -n 1) \
+          timemax=2.0e+2 \
+          wtimemax=6.0e+2 \
+          log_rate=5.0e-1 \
+          log_after=0.0e+0 \
+          save_rate=5.0e+1 \
+          save_after=0.0e+0 \
+          stat_rate=1.0e-1 \
+          stat_after=1.0e+2 \
+          lx=1.0e+0 \
+          ly=1.5707963267948966 \
+          lz=2.0e+0 \
+          glisize=32 \
+          gljsize=16 \
+          glksize=32 \
+          use_stretched_grid=true \
+          implicitx=true \
+          implicity=false \
+          implicitz=false \
+          coef_dt_adv=0.95 \
+          coef_dt_dif=0.95 \
+          Re=80. \
+          mpirun -n 2 --oversubscribe ./a.out
+      - name: Pack last flowfield and torque log
+        run: |
+          mkdir artifacts
+          cp output/log/nusselt.dat ./artifacts/
+          dirname=$(find output/save -type d | sort | tail -n 1)
+          cp -r ${dirname} ./artifacts/flowfield
+      - name: Upload artifacts
+        uses: actions/upload-artifact@main
+        with:
+          name: artifacts
+          path: artifacts
+
+  postprocess-artifacts:
+    name: Visualise outcomes and push
+    runs-on: ubuntu-latest
+    needs: [build-and-execute]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+        with:
+          repository: 'NaokiHori/SimpleTCSolver'
+          ref: ${{ github.ref_name }}
+      - name: Download artifacts
+        uses: actions/download-artifact@main
+        with:
+          name: artifacts
+          path: artifacts
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy matplotlib
+      - name: Contour flow field and plot torque history
+        run: |
+          python visualise.py artifacts result.png
+      - name: Pack images
+        run: |
+          mkdir images
+          mv result.png images/
+      - name: Upload artifacts
+        uses: actions/upload-artifact@main
+        with:
+          name: images
+          path: images
+
+  build-doc:
+    name: Build documentation
+    runs-on: ubuntu-latest
+    needs: [postprocess-artifacts]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@main
+        with:
+          repository: 'NaokiHori/SimpleTCSolver'
+          ref: ${{ github.ref_name }}
+      - name: Download artifacts
+        uses: actions/download-artifact@main
+        with:
+          name: images
+          path: images
+      - name: Position images to proper locations
+        run: |
+          mv images/result.png docs/source/test/result.png
+      - name: Build documentation using Sphinx
+        run: |
+          echo "cd docs && make html" > sphinx.sh
+          docker run \
+            --rm \
+            --volume ${PWD}:/project \
+            --workdir /project \
+            sphinxdoc/sphinx:latest \
+            /bin/bash sphinx.sh
+      - name: Upload HTML artifacts
+        uses: actions/upload-artifact@main
+        with:
+          name: DocHTML
+          path: docs/build/html
+
+  deploy-doc:
+    name: Deploy documentation
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: "pages"
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: [build-doc]
+    steps:
+      - name: Download HTML artifacts
+        uses: actions/download-artifact@main
+        with:
+          name: DocHTML
+          path: docs/build/html
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@main
+      - name: Upload HTML
+        uses: actions/upload-pages-artifact@main
+        with:
+          path: docs/build/html
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@main
+

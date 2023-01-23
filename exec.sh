@@ -8,7 +8,7 @@ export restart_sim=false
 
 ## durations
 # maximum duration (in free-fall time)
-export timemax=1.0e+3
+export timemax=5.0e+2
 # maximum duration (in wall time [s])
 export wtimemax=6.0e+2
 # logging rate (in free-fall time)
