@@ -1,14 +1,12 @@
+#include <stdio.h>
+#include <float.h>
+#include <fftw3.h>
 #include <mpi.h>
 #include "common.h"
 #include "domain.h"
 #include "config.h"
 #include "internal.h"
 
-
-
-#include <stdio.h>
-#include <float.h>
-#include <fftw3.h>
 
 /**
  * @brief return optimised MPI domain decomposition information
@@ -21,8 +19,9 @@ static sdecomp_t *optimise_sdecomp_init(void){
   //   which is to be optimised
   int dims_optimum[NDIMS] = {0, 0, 0};
   double wtime_optimum = DBL_MAX;
-  int nprocs;
+  int nprocs = 0, myrank = 0;
   MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
+  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
   // factorise and decide dims
   for(int n = 1; n <= nprocs; n++){
     if(nprocs % n == 0){
@@ -83,10 +82,10 @@ static sdecomp_t *optimise_sdecomp_init(void){
           y1_to_z1_c = sdecomp_transpose_fwrd_init(sdecomp, SDECOMP_Y1PENCIL, sizes, size_elem, mpi_dtype);
           z1_to_y1_c = sdecomp_transpose_bwrd_init(sdecomp, SDECOMP_Z1PENCIL, sizes, size_elem, mpi_dtype);
         }
-        // z1 to x2 (complex), only when grid is stretched
+        // z1 to x2 (complex)
         sdecomp_transpose_t *z1_to_x2_c = NULL;
         sdecomp_transpose_t *x2_to_z1_c = NULL;
-        if(config.get_bool("use_stretched_grid")){
+        {
           const int sizes[NDIMS] = {
             glsizes[0],
             glsizes[1]/2+1,
@@ -104,10 +103,8 @@ static sdecomp_t *optimise_sdecomp_init(void){
         for(int n = 0; n < niter; n++){
           sdecomp_test_transpose_3d_x1_to_y1(sdecomp, x1_to_y1_r);
           sdecomp_test_transpose_3d_y1_to_z1(sdecomp, y1_to_z1_c);
-          if(config.get_bool("use_stretched_grid")){
-            sdecomp_test_transpose_3d_z1_to_x2(sdecomp, z1_to_x2_c);
-            sdecomp_test_transpose_3d_x2_to_z1(sdecomp, x2_to_z1_c);
-          }
+          sdecomp_test_transpose_3d_z1_to_x2(sdecomp, z1_to_x2_c);
+          sdecomp_test_transpose_3d_x2_to_z1(sdecomp, x2_to_z1_c);
           sdecomp_test_transpose_3d_z1_to_y1(sdecomp, z1_to_y1_c);
           sdecomp_test_transpose_3d_y1_to_x1(sdecomp, y1_to_x1_r);
         }
@@ -115,10 +112,8 @@ static sdecomp_t *optimise_sdecomp_init(void){
         // clean-up tentative transpose plans
         sdecomp_transpose_finalise(x1_to_y1_r);
         sdecomp_transpose_finalise(y1_to_z1_c);
-        if(config.get_bool("use_stretched_grid")){
-          sdecomp_transpose_finalise(z1_to_x2_c);
-          sdecomp_transpose_finalise(x2_to_z1_c);
-        }
+        sdecomp_transpose_finalise(z1_to_x2_c);
+        sdecomp_transpose_finalise(x2_to_z1_c);
         sdecomp_transpose_finalise(z1_to_y1_c);
         sdecomp_transpose_finalise(y1_to_x1_r);
         // clean-up current sdecomp config
@@ -131,8 +126,6 @@ static sdecomp_t *optimise_sdecomp_init(void){
           dims_optimum[2] = dims[2];
           wtime_optimum = wtime;
         }
-        int myrank;
-        MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
         if(myrank == 0){
           const int nd = common_get_ndigits(nprocs);
           printf("dims: [%*d, %*d, %*d]: % .7e [sec]\n", nd, dims[0], nd, dims[1], nd, dims[2], wtime);
@@ -140,8 +133,6 @@ static sdecomp_t *optimise_sdecomp_init(void){
       }
     }
   }
-  int myrank;
-  MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
   if(myrank == 0){
     const int nd = common_get_ndigits(nprocs);
     printf("Conclusive domain decomposition: [%*d, %*d, %*d]\n", nd, dims_optimum[0], nd, dims_optimum[1], nd, dims_optimum[2]);
@@ -206,8 +197,8 @@ domain_t *domain_init(void){
   domain->lengths[0] = lx;
   domain->lengths[1] = ly;
   domain->lengths[2] = lz;
-  domain->xf = xf;
-  domain->xc = xc;
+  domain->xf  = xf;
+  domain->xc  = xc;
   domain->dxf = dxf;
   domain->dxc = dxc;
   domain->uxdifx = uxdifx;
