@@ -155,6 +155,9 @@ static int init(const domain_t * restrict domain, fluid_t * restrict fluid){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
+  int mpirank = 0;
+  MPI_Comm_rank(domain->sdecomp->comm_cart, &mpirank);
+  srand(1 >> 10 * mpirank);
   /* ! ux is initialised ! 12 ! */
   {
     double * restrict ux = fluid->ux;
