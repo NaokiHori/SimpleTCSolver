@@ -6,14 +6,100 @@
 #include "domain.h"
 #include "fluid.h"
 #include "linear_system.h"
+#include "tdm.h"
 #include "arrays/fluid.h"
 #include "internal.h"
 
 
+// local variable to store buffers and transpose plans
+//   to solve linear systems in each direction
 static linear_system_t *linear_system = NULL;
 
+static void solve_linear_systems_in_x(const domain_t * restrict domain, const double prefactor){
+  // x1 pencil
+  const int isize = sdecomp_get_pencil_mysize(domain->sdecomp, SDECOMP_X1PENCIL, SDECOMP_XDIR, linear_system->glsizes[0]);
+  const int jsize = sdecomp_get_pencil_mysize(domain->sdecomp, SDECOMP_X1PENCIL, SDECOMP_YDIR, linear_system->glsizes[1]);
+  const int ksize = sdecomp_get_pencil_mysize(domain->sdecomp, SDECOMP_X1PENCIL, SDECOMP_ZDIR, linear_system->glsizes[2]);
+  // set diagonal components of linear system
+  double * restrict tdm_l = linear_system->tdm_l;
+  double * restrict tdm_c = linear_system->tdm_c;
+  double * restrict tdm_u = linear_system->tdm_u;
+  const laplace_t * restrict uydifx = domain->uydifx;
+  for(int i = 0; i < isize; i++){
+    // N.B. UYDIFX(1) <-> i = 0
+    tdm_l[i] =    - prefactor * UYDIFX(i+1).l;
+    tdm_c[i] = 1. - prefactor * UYDIFX(i+1).c;
+    tdm_u[i] =    - prefactor * UYDIFX(i+1).u;
+  }
+  tdm_solve_double(
+      /* size of system  */ isize,
+      /* number of rhs   */ jsize * ksize,
+      /* periodic        */ false,
+      /* lower- diagonal */ tdm_l,
+      /* center-diagonal */ tdm_c,
+      /* upper- diagonal */ tdm_u,
+      /* input / output  */ linear_system->x1pncl
+  );
+}
 
-#define DUY(I, J, K) (duy[ ((K)-1) * (jsize) * (isize) + ((J)-1) * (isize) + ((I)-1) ])
+static void solve_linear_systems_in_y(const domain_t * restrict domain, const double prefactor){
+  // y1 pencil
+  const int isize = sdecomp_get_pencil_mysize(domain->sdecomp, SDECOMP_Y1PENCIL, SDECOMP_XDIR, linear_system->glsizes[0]);
+  const int jsize = sdecomp_get_pencil_mysize(domain->sdecomp, SDECOMP_Y1PENCIL, SDECOMP_YDIR, linear_system->glsizes[1]);
+  const int ksize = sdecomp_get_pencil_mysize(domain->sdecomp, SDECOMP_Y1PENCIL, SDECOMP_ZDIR, linear_system->glsizes[2]);
+  const int ioffs = sdecomp_get_pencil_offset(domain->sdecomp, SDECOMP_Y1PENCIL, SDECOMP_XDIR, linear_system->glsizes[0]);
+  // solve linear systems
+  double * restrict tdm_l = linear_system->tdm_l;
+  double * restrict tdm_c = linear_system->tdm_c;
+  double * restrict tdm_u = linear_system->tdm_u;
+  const laplace_t * restrict uydify = domain->uydify;
+  // for each x (this is needed since Laplacian varies in x)
+  for(int i = ioffs; i < isize + ioffs; i++){
+    // set diagonal components of linear system
+    for(int j = 0; j < jsize; j++){
+      // N.B. UYDIFY(1) <-> i = 0
+      tdm_l[j] =    - prefactor * UYDIFY(i+1).l;
+      tdm_c[j] = 1. - prefactor * UYDIFY(i+1).c;
+      tdm_u[j] =    - prefactor * UYDIFY(i+1).u;
+    }
+    tdm_solve_double(
+        /* size of system  */ jsize,
+        /* number of rhs   */ ksize,
+        /* periodic        */ true,
+        /* lower- diagonal */ tdm_l,
+        /* center-diagonal */ tdm_c,
+        /* upper- diagonal */ tdm_u,
+        /* input / output  */ linear_system->y1pncl
+    );
+  }
+}
+
+static void solve_linear_systems_in_z(const domain_t * restrict domain, const double prefactor){
+  // z1 pencil
+  const int isize = sdecomp_get_pencil_mysize(domain->sdecomp, SDECOMP_Z1PENCIL, SDECOMP_XDIR, linear_system->glsizes[0]);
+  const int jsize = sdecomp_get_pencil_mysize(domain->sdecomp, SDECOMP_Z1PENCIL, SDECOMP_YDIR, linear_system->glsizes[1]);
+  const int ksize = sdecomp_get_pencil_mysize(domain->sdecomp, SDECOMP_Z1PENCIL, SDECOMP_ZDIR, linear_system->glsizes[2]);
+  // solve linear systems
+  double * restrict tdm_l = linear_system->tdm_l;
+  double * restrict tdm_c = linear_system->tdm_c;
+  double * restrict tdm_u = linear_system->tdm_u;
+  const laplace_t uydifz = domain->uydifz;
+  // set diagonal components of linear system
+  for(int k = 0; k < ksize; k++){
+    tdm_l[k] =    - prefactor * uydifz.l;
+    tdm_c[k] = 1. - prefactor * uydifz.c;
+    tdm_u[k] =    - prefactor * uydifz.u;
+  }
+  tdm_solve_double(
+      /* size of system  */ ksize,
+      /* number of rhs   */ isize * jsize,
+      /* periodic        */ true,
+      /* lower- diagonal */ tdm_l,
+      /* center-diagonal */ tdm_c,
+      /* upper- diagonal */ tdm_u,
+      /* input / output  */ linear_system->z1pncl
+  );
+}
 
 /**
  * @brief update uy
@@ -24,6 +110,8 @@ static linear_system_t *linear_system = NULL;
  * @return              : error code
  */
 int fluid_update_velocity_uy(const domain_t * restrict domain, const int rkstep, const double dt, fluid_t * restrict fluid){
+  // buffer to store \delta u_y
+#define DUY(I, J, K) (duy[ ((K)-1) * (jsize) * (isize) + ((J)-1) * (isize) + ((I)-1) ])
   /* ! initalise linear solver ! 8 ! */
   if(linear_system == NULL){
     // size of linear system to be solved for "uy": glisize x gljsize
@@ -63,21 +151,12 @@ int fluid_update_velocity_uy(const domain_t * restrict domain, const int rkstep,
     const double Re = config.get_double("Re");
     prefactor = (gamma * dt) / (2. * Re);
   }
-  /* ! solve linear system in x direction ! 19 ! */
+  /* ! solve linear system in x direction ! 3 ! */
   if(config.get_bool("implicitx")){
-    /* set diagonal components of linear system */
-    const int isize = domain->glsizes[0];
-    for(int i = 1; i <= isize; i++){
-      const laplace_t * restrict uydifx = domain->uydifx;
-      // N.B. i = 1 should be mapped to index 0 for tdm_[luc]
-      linear_system->tdm_l[i-1] =    - prefactor * UYDIFX(i).l;
-      linear_system->tdm_c[i-1] = 1. - prefactor * UYDIFX(i).c;
-      linear_system->tdm_u[i-1] =    - prefactor * UYDIFX(i).u;
-    }
-    linear_system_solve_in_x(linear_system);
+    solve_linear_systems_in_x(domain, prefactor);
   }
   /* ! transpose x1pencil to y1pencil ! 8 ! */
-  const bool needs_x_y_transpose = config.get_bool("implicity");
+  const bool needs_x_y_transpose = config.get_bool("implicity") || config.get_bool("implicitz");
   if(needs_x_y_transpose){
     sdecomp_transpose_execute(
         linear_system->transposer_x1_to_y1,
@@ -85,22 +164,9 @@ int fluid_update_velocity_uy(const domain_t * restrict domain, const int rkstep,
         linear_system->y1pncl
     );
   }
-  /* ! solve linear system in y direction ! 15 ! */
+  /* ! solve linear system in y direction ! 3 ! */
   if(config.get_bool("implicity")){
-    /* set diagonal components of the linear system */
-    const int jsize = domain->glsizes[1];
-    for(int j = 1; j <= jsize; j++){
-      // TODO: correct
-      const double dy = domain->dy;
-      const double val_l = 1. / dy / dy;
-      const double val_u = 1. / dy / dy;
-      const double val_c = - val_l - val_u;
-      // N.B. j = 1 should be mapped to index 0 for tdm_[luc]
-      linear_system->tdm_l[j-1] =    - prefactor * val_l;
-      linear_system->tdm_c[j-1] = 1. - prefactor * val_c;
-      linear_system->tdm_u[j-1] =    - prefactor * val_u;
-    }
-    linear_system_solve_in_y(linear_system);
+    solve_linear_systems_in_y(domain, prefactor);
   }
   /* ! transpose y1pencil to z1pencil ! 8 ! */
   const bool needs_y_z_transpose = config.get_bool("implicitz");
@@ -111,21 +177,9 @@ int fluid_update_velocity_uy(const domain_t * restrict domain, const int rkstep,
         linear_system->z1pncl
     );
   }
-  /* ! solve linear system in z direction ! 15 ! */
+  /* ! solve linear system in z direction ! 3 ! */
   if(config.get_bool("implicitz")){
-    /* set diagonal components of the linear system */
-    const int ksize = domain->glsizes[2];
-    for(int k = 1; k <= ksize; k++){
-      const double dz = domain->dz;
-      const double val_l = 1. / dz / dz;
-      const double val_u = 1. / dz / dz;
-      const double val_c = - val_l - val_u;
-      // N.B. k = 1 should be mapped to index 0 for tdm_[luc]
-      linear_system->tdm_l[k-1] =    - prefactor * val_l;
-      linear_system->tdm_c[k-1] = 1. - prefactor * val_c;
-      linear_system->tdm_u[k-1] =    - prefactor * val_u;
-    }
-    linear_system_solve_in_z(linear_system);
+    solve_linear_systems_in_z(domain, prefactor);
   }
   /* ! transpose z1pencil to y1pencil ! 7 ! */
   if(needs_y_z_transpose){
@@ -159,11 +213,9 @@ int fluid_update_velocity_uy(const domain_t * restrict domain, const int rkstep,
     }
     fluid_update_boundaries_uy(domain, uy);
   }
+#undef DUY
   return 0;
 }
-
-#undef DUY
-
 
 int fluid_update_velocity_finalise_uy(void){
   linear_system_finalise(linear_system);

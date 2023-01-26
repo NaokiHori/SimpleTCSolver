@@ -4,9 +4,9 @@ Simple TC Solver
 
 UNDER ACTIVE DEVELOPMENT.
 
-More rigorous CI will be added soon, and the documentation will be enriched in the near future in order to clearly tell why and how things are treated.
+Additional test cases will soon be added, and the documentation will be enriched in the near future in order to clearly explain why and how things are treated.
 
-Also implementations are partially incomplete, in particular 1. the implicit treatment of the diffusive terms in the azimuthal direction and 2. the computation of the dissipation rate are under construction (Cartesian version is directly used).
+The implementations are partly incomplete, in particular the calculation of the dissipation rate is still under construction (the Cartesian version is used, which is obviously inaccurate).
 
 |License|_ |CI|_ |LastCommit|_
 
@@ -28,8 +28,17 @@ Overview
 
 This library numerically solves the incompressible Navier-Stokes equations in three-dimensional cylindrical domains using a finite-difference method.
 In particular, it aims to simulate the motion of fluid between two independently rotating coaxial cylinders, namely Taylor-Couette flows.
-This is built on top of `SimpleNSSolver <https://github.com/NaokiHori/SimpleNavierStokesSolver>`_.
-Please refer to `the documentation <https://naokihori.github.io/SimpleTCSolver>`_ for the governing equations and their discretisations.
+This is based on `SimpleNSSolver <https://github.com/NaokiHori/SimpleNavierStokesSolver>`_, a massively parallelised Navier-Stokes solver in Cartesian domains.
+Please refer to `the documentation <https://naokihori.github.io/SimpleTCSolver>`_ for the governing equations and their discretisations to achieve a conservative and consistent scheme.
+
+********
+Features
+********
+
+* A second-order-accurate and energy-conserving finite difference scheme, achieving stable integration.
+* `MPI parallelisation <https://naokihori.github.io/SimpleNavierStokesSolver/numerical_method/spatial_discretisation/domain_setup.html>`_
+* `Efficient FFT-based direct Poisson solver <https://naokihori.github.io/SimpleNavierStokesSolver/implementation/fluid/compute_potential.html>`_
+* Explicit/implicit treatments of diffusive terms in all (radial, azimuthal, and axial) directions are easily switchable.
 
 **********
 Dependency
@@ -52,13 +61,13 @@ Please check the README of `SimpleNSSolver <https://github.com/NaokiHori/SimpleN
    $ make all    # compile
    $ sh exec.sh  # change parameters if needed
 
-Simulations would dump the whole flow field and some log files, whose visualisation leads
+Simulations dump the entire flow field and some log files, which typically as follows.
 
 .. image:: https://naokihori.github.io/SimpleTCSolver/_images/result.png
    :width: 100%
 
-Here the averaged azimuthal velocity profile is visualised (left), which shows a disturbed flow field (Taylor vortices).
-Also the normalised torques measured on the inner and outer cylinder walls are plotted (right), which should agree to the literature result (e.g., Ostilla et al., J. Fluid Mech. (719), 2013).
+The averaged azimuthal velocity profile (left) should show a perturbed flow field (Taylor vortices) if the continuous integration is successful.
+Also the normalised torques measured on the inner and outer walls of the cylinder are plotted (right), which should agree with the literature result (e.g., Ostilla et al., J. Fluid Mech. (719), 2013).
 
 Please refer to `the workflow <https://github.com/NaokiHori/SimpleTCSolver/blob/main/.github/workflows/ci.yml>`_ to see how this figure is obtained.
 
@@ -66,7 +75,7 @@ Please refer to `the workflow <https://github.com/NaokiHori/SimpleTCSolver/blob/
 Documentation
 *************
 
-Documentation can be found `here <https://naokihori.github.io/SimpleTCSolver>`_ (still on half way).
-Since the interface is quite similar to the Cartesian version, descriptions are omitted for simplicity.
-Please refer to the `documentation of SimpleNSSolver <https://naokihori.github.io/SimpleNavierStokesSolver>`_ for other details.
+Documentation can be found `here <https://naokihori.github.io/SimpleTCSolver>`_ (still halfway).
+Many explanations are omitted in order to avoid duplication.
+Please refer to the `documentation of SimpleNSSolver <https://naokihori.github.io/SimpleNavierStokesSolver>`_ for more details.
 

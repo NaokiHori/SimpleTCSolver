@@ -5,7 +5,6 @@
 #include "common.h"
 #include "domain.h"
 
-
 /**
  * @struct linear_system_t
  * @brief structure storing buffers and plans to solve tri-diagonal linear systems in each dimension A x = b
@@ -24,11 +23,6 @@ typedef struct {
   sdecomp_transpose_t *transposer_x1_to_y1, *transposer_y1_to_x1;
   sdecomp_transpose_t *transposer_y1_to_z1, *transposer_z1_to_y1;
 } linear_system_t;
-
-extern int linear_system_solve_in_x(linear_system_t * restrict linear_system);
-extern int linear_system_solve_in_y(linear_system_t * restrict linear_system);
-extern int linear_system_solve_in_z(linear_system_t * restrict linear_system);
-
 
 extern linear_system_t *init_linear_system(sdecomp_t * restrict sdecomp, const int glsizes[NDIMS]);
 extern int linear_system_finalise(linear_system_t * restrict linear_system);

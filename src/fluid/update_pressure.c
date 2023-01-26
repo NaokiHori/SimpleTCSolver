@@ -58,16 +58,16 @@ int fluid_update_pressure(const domain_t * restrict domain, const int rkstep, co
     const double Re = config.get_double("Re");
     const double gamma = RKCOEFS[rkstep].gamma;
     const double prefactor = (gamma * dt) / (2. * Re);
+    const double * restrict xf = domain->xf;
     const double dy = domain->dy;
     for(int k = 1; k <= ksize; k++){
       for(int j = 1; j <= jsize; j++){
         for(int i = 1; i <= isize; i++){
-          // TODO: correct
-          const double c_ym = 1. / dy;
-          const double c_yp = 1. / dy;
+          const double c_ym = 1. / XF(i  ) / dy;
+          const double c_yp = 1. / XF(i  ) / dy;
           const double dpsi_ym = - PSI(i  , j-1, k  ) + PSI(i  , j  , k  );
           const double dpsi_yp = - PSI(i  , j  , k  ) + PSI(i  , j+1, k  );
-          P(i, j, k) -= prefactor / dy * (
+          P(i, j, k) -= prefactor / XF(i  ) / dy * (
               - c_ym * dpsi_ym
               + c_yp * dpsi_yp
           );
