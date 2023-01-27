@@ -139,52 +139,6 @@ in the azimuthal direction, and
 
 in the axial direction.
 
-.. Although it is not correct numerically, I adopt the relation
-
-.. .. math::
-
-..    \der{q}{\vr}
-..    +
-..    \frac{q}{\vr}
-..    =
-..    \frac{1}{\vr} \der{}{\vr} \left( \vr q \right)
-
-.. to yield
-
-.. .. math::
-
-..    \frac{1}{\vr}
-..    \der{}{\vr} \left( \vr T_{\vr \vr} \right)
-..    +
-..    \frac{1}{\vr}
-..    \der{T_{\vr \vt}}{\vt}
-..    +
-..    \der{T_{\vr \vz}}{\vz}
-..    -
-..    \frac{T_{\vt \vt}}{\vr},
-
-.. .. math::
-
-..    \frac{1}{\vr}
-..    \der{}{\vr} \left( \vr T_{\vt \vr} \right)
-..    +
-..    \frac{1}{\vr}
-..    \der{T_{\vt \vt}}{\vt}
-..    +
-..    \der{T_{\vt \vz}}{\vz}
-..    +
-..    \frac{T_{\vr \vt}}{\vr},
-
-.. .. math::
-
-..    \frac{1}{\vr}
-..    \der{}{\vr} \left( \vr T_{\vz \vr} \right)
-..    +
-..    \frac{1}{\vr}
-..    \der{T_{\vz \vt}}{\vt}
-..    +
-..    \der{T_{\vz \vz}}{\vz}.
-
 ***************
 Diffusive terms
 ***************
@@ -193,7 +147,35 @@ By assuming Newtonian fluid, I can model the stress tensor :math:`T_{ij}` using 
 
 .. math::
 
-   2 \mu \left( \frac{1}{2} L_{ij} + \frac{1}{2} L_{ji} \right).
+   2 \mu \left( \frac{1}{2} L_{ij} + \frac{1}{2} L_{ji} \right),
+
+giving
+
+.. math::
+
+   \begin{pmatrix}
+      T_{\vr \vr} & T_{\vr \vt} & T_{\vr \vz} \\
+      T_{\vt \vr} & T_{\vt \vt} & T_{\vt \vz} \\
+      T_{\vz \vr} & T_{\vz \vt} & T_{\vz \vz}
+   \end{pmatrix}
+   =
+   \begin{pmatrix}
+      \trr & \trt & \trz \\
+      \ttr & \ttt & \ttz \\
+      \tzr & \tzt & \tzz
+   \end{pmatrix},
+
+where I use an identity:
+
+.. math::
+
+   \der{q}{r}
+   -
+   \frac{q}{r}
+   =
+   r \der{}{r} \left( \frac{q}{r} \right).
+
+Note that this relation is not always valid from a numerical point of view (after being discretised).
 
 Also, because of the symmetric nature of :math:`T_{ij}`, I have
 
@@ -203,6 +185,7 @@ Also, because of the symmetric nature of :math:`T_{ij}`, I have
    -
    \frac{T_{\vt \vt}}{\vr}
    =
+   \mu
    \frac{2}{\vr}
    \left\{
       \vr \der{}{\vr} \left(
@@ -221,6 +204,7 @@ and
    +
    \frac{T_{\vt \vr}}{\vr}
    =
+   \mu
    \frac{2}{\vr}
    \left\{
       \vr \der{}{\vr} \left(
@@ -229,39 +213,26 @@ and
       +
       \frac{1}{\vr}
       \der{\ur}{\vt}
-   \right\},
-
-where I use an identity:
-
-.. math::
-
-   \der{q}{r}
-   -
-   \frac{q}{r}
-   =
-   r \der{}{r} \left( \frac{q}{r} \right).
+   \right\}.
 
 Finally I obtain the following relations, the radial component:
 
 .. math::
 
-   2 \der{}{\vr} \lrr
+   \der{}{\vr} \left\{
+      \trr
+   \right\}
    & +
    \frac{1}{\vr}
    \der{}{\vt} \left\{
-      % \lrt + \ltr
-      \frac{1}{\vr} \der{\ur}{\vt}
-      +
-      \vr \der{}{\vr} \left( \frac{\ut}{\vr} \right)
+      \trt
    \right\}
    +
-   \der{}{\vz} \left(
-      \lrz
-      +
-      \lzr
-   \right) \\
+   \der{}{\vz} \left\{
+      \trz
+   \right\} \\
    & +
-   \frac{2}{\vr}
+   \mu \frac{2}{\vr}
    \left\{
       \vr \der{}{\vr} \left(
          \frac{\ur}{\vr}
@@ -275,25 +246,20 @@ the azimuthal component:
 
 .. math::
 
-   \der{}{\vr} \left(
-      % \ltr + \lrt
-      \vr \der{}{\vr} \left( \frac{\ut}{\vr} \right)
-      +
-      \frac{1}{\vr} \der{\ur}{\vt}
-   \right)
+   \der{}{\vr} \left\{
+      \ttr
+   \right\}
    & +
-   \frac{2}{\vr}
-   \der{}{\vt} \left(
-      \ltt
-   \right)
+   \frac{1}{\vr}
+   \der{}{\vt} \left\{
+      \ttt
+   \right\}
    +
-   \der{}{\vz} \left(
-      \ltz
-      +
-      \lzt
-   \right) \\
+   \der{}{\vz} \left\{
+      \ttz
+   \right\} \\
    & +
-   \frac{2}{\vr}
+   \mu \frac{2}{\vr}
    \left\{
       \vr \der{}{\vr} \left(
          \frac{\ut}{\vr}
@@ -307,26 +273,46 @@ and the axial component:
 
 .. math::
 
-   \der{}{\vr} \left(
-      \lzr
-      +
-      \lrz
-   \right)
+   \der{}{\vr} \left\{
+      \tzr
+   \right\}
    & +
    \frac{1}{\vr}
-   \der{}{\vt} \left(
-      \lzt
-      +
-      \ltz
-   \right)
+   \der{}{\vt} \left\{
+      \tzt
+   \right\}
    +
-   2 \der{}{\vz} \left(
-      \lzz
-   \right) \\
+   \der{}{\vz} \left\{
+      \tzz
+   \right\} \\
    & +
-   \frac{1}{\vr} \left(
-      \lzr
-      +
-      \lrz
-   \right).
+   \frac{1}{\vr} \left\{
+      \tzr
+   \right\}.
+
+When the viscosity is constant
+
+.. math::
+
+   \mu
+   =
+   \mu_0
+   =
+   const.,
+
+which is of my interest in this project, these relations can be greatly simplified.
+
+Roughly speaking, since
+
+.. math::
+
+   \der{}{x_j} \der{u_j}{x_i}
+   =
+   \der{}{x_i} \der{u_j}{x_j}
+   =
+   0,
+
+the anti-symmetric part of the stress tensor vanishes.
+
+Although this is apparent in Cartesian domain, interchanging :math:`\der{}{x_j}` and :math:`\der{}{x_i}` is not always valid numerically, which will be discussed in the :ref:`implementation <implementation>`.
 

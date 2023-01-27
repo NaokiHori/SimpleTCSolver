@@ -137,6 +137,16 @@ mathjax3_config = {
             "lzr": ["\\der{\\uz}{\\vr}"],
             "lzt": ["\\frac{1}{\\vr} \\der{\\uz}{\\vt}"],
             "lzz": ["\\der{\\uz}{\\vz}"],
+            # t_ij
+            "trr": ["2 \\mu \\left( \\der{\\ur}{\\vr} \\right)"],
+            "trt": ["\\mu \\left( \\frac{1}{\\vr} \\der{\\ur}{\\vt} + \\vr \\der{}{\\vr} \\left( \\frac{\\ut}{\\vr} \\right) \\right)"],
+            "trz": ["\\mu \\left( \\der{\\ur}{\\vz} + \\der{\\uz}{\\vr} \\right)"],
+            "ttr": ["\\trt"],
+            "ttt": ["2 \\mu \\left( \\frac{1}{\\vr} \\der{\\ut}{\\vt} + \\frac{\\ur}{\\vr} \\right)"],
+            "ttz": ["\\mu \\left( \\der{\\ut}{\\vz} + \\frac{1}{\\vr} \\der{\\uz}{\\vt} \\right)"],
+            "tzr": ["\\trz"],
+            "tzt": ["\\ttz"],
+            "tzz": ["2 \\mu \\left( \\der{\\uz}{\\vz} \\right)"],
         }
     }
 }
