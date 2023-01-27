@@ -25,9 +25,9 @@ int compute_rhs_ux(const domain_t * restrict domain, const int rkstep, fluid_t *
   const double * restrict xc = domain->xc;
   const double * restrict dxf = domain->dxf;
   const double * restrict dxc = domain->dxc;
-  const laplace_t * restrict uxdifx = domain->uxdifx;
-  const laplace_t * restrict uxdify = domain->uxdify;
-  const laplace_t            uxdifz = domain->uxdifz;
+  const laplace_t * restrict lapuxx = domain->lapuxx;
+  const laplace_t * restrict lapuxy = domain->lapuxy;
+  const laplace_t            lapuxz = domain->lapuxz;
   const double dy = domain->dy;
   const double dz = domain->dz;
   const double * restrict ux = fluid->ux;
@@ -107,23 +107,23 @@ int compute_rhs_ux(const domain_t * restrict domain, const int rkstep, fluid_t *
         /* diffusion */
         /* ! diffused in r ! 5 ! */
         const double difx = + 1. / Re * (
-            + UXDIFX(i).l * UX(i-1, j  , k  )
-            + UXDIFX(i).c * UX(i  , j  , k  )
-            + UXDIFX(i).u * UX(i+1, j  , k  )
+            + LAPUXX(i).l * UX(i-1, j  , k  )
+            + LAPUXX(i).c * UX(i  , j  , k  )
+            + LAPUXX(i).u * UX(i+1, j  , k  )
         );
         /* ! diffused in t ! 7 ! */
         // Laplace operator differs in r direction,
-        //   so "i", NOT "j" for UXDIFY
+        //   so "i", NOT "j" for LAPUXY
         const double dify = + 1. / Re * (
-            + UXDIFY(i).l * UX(i  , j-1, k  )
-            + UXDIFY(i).c * UX(i  , j  , k  )
-            + UXDIFY(i).u * UX(i  , j+1, k  )
+            + LAPUXY(i).l * UX(i  , j-1, k  )
+            + LAPUXY(i).c * UX(i  , j  , k  )
+            + LAPUXY(i).u * UX(i  , j+1, k  )
         );
         /* ! diffused in z ! 5 ! */
         const double difz = + 1. / Re * (
-            + uxdifz.l    * UX(i  , j  , k-1)
-            + uxdifz.c    * UX(i  , j  , k  )
-            + uxdifz.u    * UX(i  , j  , k+1)
+            + lapuxz.l    * UX(i  , j  , k-1)
+            + lapuxz.c    * UX(i  , j  , k  )
+            + lapuxz.u    * UX(i  , j  , k+1)
         );
         /* ! additional diffusive term 0 ! 13 ! */
         double difa0;

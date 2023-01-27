@@ -29,15 +29,18 @@ def attach_footer(f, name):
 class VectorType(enum.Enum):
     XFACE   = enum.auto()
     XCENTER = enum.auto()
-    UXDIFX  = enum.auto() # [2:isize]
-    UYDIFX  = enum.auto() # [1:isize]
-    UZDIFX  = enum.auto() # [1:isize]
-    UXDIFY  = enum.auto() # [2:isize]
-    UYDIFY  = enum.auto() # [1:isize]
-    UZDIFY  = enum.auto() # [1:isize]
-    UXDIFZ  = enum.auto() # constant, not needed
-    UYDIFZ  = enum.auto() # constant, not needed
-    UZDIFZ  = enum.auto() # constant, not needed
+    LAPUXX  = enum.auto() # [2:isize]
+    LAPUYX  = enum.auto() # [1:isize]
+    LAPUZX  = enum.auto() # [1:isize]
+    LAPPX   = enum.auto() # [1:isize]
+    LAPUXY  = enum.auto() # [2:isize]
+    LAPUYY  = enum.auto() # [1:isize]
+    LAPUZY  = enum.auto() # [1:isize]
+    LAPPY   = enum.auto() # [1:isize]
+    LAPUXZ  = enum.auto() # constant, not needed
+    LAPUYZ  = enum.auto() # constant, not needed
+    LAPUZZ  = enum.auto() # constant, not needed
+    LAPPZ   = enum.auto() # constant, not needed
 
 def generate_grid_1d(f, name, vector_type):
     # prepare macros for one-dimensional vector
@@ -50,37 +53,48 @@ def generate_grid_1d(f, name, vector_type):
     elif vector_type == VectorType.XCENTER:
         size = "isize+2"
         index = "N"
-    elif vector_type == VectorType.UXDIFX:
+    elif vector_type == VectorType.LAPUXX:
         # [2:isize]
         size = "isize-1"
         index = "N-2"
-    elif vector_type == VectorType.UYDIFX:
+    elif vector_type == VectorType.LAPUYX:
         # [1:isize]
         size = "isize"
         index = "N-1"
-    elif vector_type == VectorType.UZDIFX:
+    elif vector_type == VectorType.LAPUZX:
         # [1:isize]
         size = "isize"
         index = "N-1"
-    elif vector_type == VectorType.UXDIFY:
+    elif vector_type == VectorType.LAPUXY:
         # [2:isize]
         size = "isize"
         index = "N-2"
-    elif vector_type == VectorType.UYDIFY:
+    elif vector_type == VectorType.LAPUYY:
         # [1:isize]
         size = "isize"
         index = "N-1"
-    elif vector_type == VectorType.UZDIFY:
+    elif vector_type == VectorType.LAPUZY:
         # [1:isize]
         size = "isize"
         index = "N-1"
-    elif vector_type == VectorType.UXDIFZ:
+    elif vector_type == VectorType.LAPPX:
+        # [1:isize]
+        size = "isize"
+        index = "N-1"
+    elif vector_type == VectorType.LAPPY:
+        # [1:isize]
+        size = "isize"
+        index = "N-1"
+    elif vector_type == VectorType.LAPUXZ:
         print("this is not needed:", vector_type)
         return
-    elif vector_type == VectorType.UYDIFZ:
+    elif vector_type == VectorType.LAPUYZ:
         print("this is not needed:", vector_type)
         return
-    elif vector_type == VectorType.UZDIFZ:
+    elif vector_type == VectorType.LAPUZZ:
+        print("this is not needed:", vector_type)
+        return
+    elif vector_type == VectorType.LAPPZ:
         print("this is not needed:", vector_type)
         return
     else:
@@ -225,12 +239,14 @@ if __name__ == "__main__":
         generate_grid_1d(f, "xc",  VectorType.XCENTER)
         generate_grid_1d(f, "dxf", VectorType.XFACE  )
         generate_grid_1d(f, "dxc", VectorType.XCENTER)
-        generate_grid_1d(f, "uxdifx", VectorType.UXDIFX)
-        generate_grid_1d(f, "uydifx", VectorType.UYDIFX)
-        generate_grid_1d(f, "uzdifx", VectorType.UZDIFX)
-        generate_grid_1d(f, "uxdify", VectorType.UXDIFY)
-        generate_grid_1d(f, "uydify", VectorType.UYDIFY)
-        generate_grid_1d(f, "uzdify", VectorType.UZDIFY)
+        generate_grid_1d(f, "lapuxx", VectorType.LAPUXX)
+        generate_grid_1d(f, "lapuyx", VectorType.LAPUYX)
+        generate_grid_1d(f, "lapuzx", VectorType.LAPUZX)
+        generate_grid_1d(f, "lapuxy", VectorType.LAPUXY)
+        generate_grid_1d(f, "lapuyy", VectorType.LAPUYY)
+        generate_grid_1d(f, "lapuzy", VectorType.LAPUZY)
+        generate_grid_1d(f, "lappx",  VectorType.LAPPX)
+        generate_grid_1d(f, "lappy",  VectorType.LAPPY)
         attach_footer(f, "domain")
     # velocity, pressure, scalar potential, and source terms of RK
     with open("fluid.h", "w", encoding="utf-8") as f:

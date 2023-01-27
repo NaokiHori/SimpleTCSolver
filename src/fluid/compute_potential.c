@@ -74,19 +74,10 @@ static int init_poisson_solver(const domain_t * restrict domain){
     poisson_solver->tdm_l = common_calloc(x2pncl_isize_c, sizeof(double));
     poisson_solver->tdm_c = common_calloc(x2pncl_isize_c, sizeof(double));
     poisson_solver->tdm_u = common_calloc(x2pncl_isize_c, sizeof(double));
-    /* ! set lower and upper diagonal components ! 11 ! */
-    // NOTE: since lower- and upper-diagonal components are
-    //   independent to y, z directions and time,
-    //   we compute here and re-use them
-    const double * restrict xf = domain->xf;
-    const double * restrict xc = domain->xc;
-    const double * restrict dxf = domain->dxf;
-    const double * restrict dxc = domain->dxc;
+    const laplace_t * restrict lappx = domain->lappx;
     for(int i = 1; i <= x2pncl_isize_c; i++){
-      // N.B. loop i = 1 to isize to use DXC and DXF macros,
-      //   which should be assigned to tdm_[lu] whose indices start from 0
-      poisson_solver->tdm_l[i-1] = XF(i  ) / DXC(i  ) / XC(i  ) / DXF(i  );
-      poisson_solver->tdm_u[i-1] = XF(i+1) / DXC(i+1) / XC(i  ) / DXF(i  );
+      poisson_solver->tdm_l[i-1] = LAPPX(i).l;
+      poisson_solver->tdm_u[i-1] = LAPPX(i).u;
     }
   }
   /* parallel matrix transpose */
@@ -342,6 +333,7 @@ int fluid_compute_potential(const domain_t * restrict domain, const int rkstep, 
     const int jsize = sdecomp_get_pencil_mysize(domain->sdecomp, SDECOMP_X2PENCIL, SDECOMP_YDIR, gljsize/2+1);
     const int ksize = sdecomp_get_pencil_mysize(domain->sdecomp, SDECOMP_X2PENCIL, SDECOMP_ZDIR, glksize    );
     const double * restrict xc = domain->xc;
+    const laplace_t * restrict lappx = domain->lappx;
     const double * restrict tdm_l = poisson_solver->tdm_l;
     const double * restrict tdm_u = poisson_solver->tdm_u;
     double * restrict tdm_c = poisson_solver->tdm_c;
@@ -351,9 +343,7 @@ int fluid_compute_potential(const domain_t * restrict domain, const int rkstep, 
         const double eval_y = poisson_solver->eigenvalues_y[j];
         /* set center diagonal components */
         for(int i = 1; i <= isize; i++){
-          tdm_c[i-1] =
-            - tdm_l[i-1]
-            - tdm_u[i-1]
+          tdm_c[i-1] = LAPPX(i).c
             + eval_y / XC(i  ) / XC(i  )
             + eval_z;
         }

@@ -37,9 +37,9 @@ typedef struct {
   double *xf, *xc;
   double *dxf, *dxc;
   double dx, dy, dz;
-  laplace_t *uxdifx, *uydifx, *uzdifx;
-  laplace_t *uxdify, *uydify, *uzdify;
-  laplace_t  uxdifz,  uydifz,  uzdifz;
+  laplace_t *lapuxx, *lapuyx, *lapuzx, *lappx;
+  laplace_t *lapuxy, *lapuyy, *lapuzy, *lappy;
+  laplace_t  lapuxz,  lapuyz,  lapuzz,  lappz;
 } domain_t;
 
 

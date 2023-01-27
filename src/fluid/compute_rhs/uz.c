@@ -24,9 +24,9 @@ int compute_rhs_uz(const domain_t * restrict domain, const int rkstep, fluid_t *
   const double * restrict xf = domain->xf;
   const double * restrict xc = domain->xc;
   const double * restrict dxf = domain->dxf;
-  const laplace_t * restrict uzdifx = domain->uzdifx;
-  const laplace_t * restrict uzdify = domain->uzdify;
-  const laplace_t            uzdifz = domain->uzdifz;
+  const laplace_t * restrict lapuzx = domain->lapuzx;
+  const laplace_t * restrict lapuzy = domain->lapuzy;
+  const laplace_t            lapuzz = domain->lapuzz;
   const double dy = domain->dy;
   const double dz = domain->dz;
   const double * restrict ux = fluid->ux;
@@ -92,21 +92,21 @@ int compute_rhs_uz(const domain_t * restrict domain, const int rkstep, fluid_t *
         /* diffusion */
         /* ! diffused in r ! 5 ! */
         const double difx = + 1. / Re * (
-            + UZDIFX(i).l * UZ(i-1, j  , k  )
-            + UZDIFX(i).c * UZ(i  , j  , k  )
-            + UZDIFX(i).u * UZ(i+1, j  , k  )
+            + LAPUZX(i).l * UZ(i-1, j  , k  )
+            + LAPUZX(i).c * UZ(i  , j  , k  )
+            + LAPUZX(i).u * UZ(i+1, j  , k  )
         );
         /* ! diffused in t ! 5 ! */
         const double dify = + 1. / Re * (
-            + UZDIFY(i).l * UZ(i  , j-1, k  )
-            + UZDIFY(i).c * UZ(i  , j  , k  )
-            + UZDIFY(i).u * UZ(i  , j+1, k  )
+            + LAPUZY(i).l * UZ(i  , j-1, k  )
+            + LAPUZY(i).c * UZ(i  , j  , k  )
+            + LAPUZY(i).u * UZ(i  , j+1, k  )
         );
         /* ! diffused in z ! 5 ! */
         const double difz = + 1. / Re * (
-            + uzdifz.l    * UZ(i  , j  , k-1)
-            + uzdifz.c    * UZ(i  , j  , k  )
-            + uzdifz.u    * UZ(i  , j  , k+1)
+            + lapuzz.l    * UZ(i  , j  , k-1)
+            + lapuzz.c    * UZ(i  , j  , k  )
+            + lapuzz.u    * UZ(i  , j  , k+1)
         );
         double pre;
         {

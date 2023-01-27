@@ -166,16 +166,6 @@ domain_t *domain_init(void){
   const double dx = lx / glisize;
   const double dy = ly / gljsize;
   const double dz = lz / glksize;
-  // discrete Laplace operators
-  laplace_t *uxdifx = allocate_and_init_uxdifx(glisize, xf, xc, dxf, dxc);
-  laplace_t *uydifx = allocate_and_init_uydifx(glisize, xf, xc, dxf, dxc);
-  laplace_t *uzdifx = allocate_and_init_uzdifx(glisize, xf, xc, dxf, dxc);
-  laplace_t *uxdify = allocate_and_init_uxdify(glisize, xf, dy);
-  laplace_t *uydify = allocate_and_init_uydify(glisize, xc, dy);
-  laplace_t *uzdify = allocate_and_init_uzdify(glisize, xc, dy);
-  laplace_t  uxdifz =              init_uxdifz(dz);
-  laplace_t  uydifz =              init_uydifz(dz);
-  laplace_t  uzdifz =              init_uzdifz(dz);
   /* ! allocate and assign members ! 27 ! */
   // allocate
   domain_t *domain = common_calloc(1, sizeof(domain_t));
@@ -201,18 +191,22 @@ domain_t *domain_init(void){
   domain->xc  = xc;
   domain->dxf = dxf;
   domain->dxc = dxc;
-  domain->uxdifx = uxdifx;
-  domain->uydifx = uydifx;
-  domain->uzdifx = uzdifx;
-  domain->uxdify = uxdify;
-  domain->uydify = uydify;
-  domain->uzdify = uzdify;
-  domain->uxdifz = uxdifz;
-  domain->uydifz = uydifz;
-  domain->uzdifz = uzdifz;
   domain->dx = dx;
   domain->dy = dy;
   domain->dz = dz;
+  // discrete Laplace operators
+  domain->lapuxx = allocate_and_init_lapuxx(glisize, xf, xc, dxf, dxc);
+  domain->lapuyx = allocate_and_init_lapuyx(glisize, xf, xc, dxf, dxc);
+  domain->lapuzx = allocate_and_init_lapuzx(glisize, xf, xc, dxf, dxc);
+  domain->lappx  = allocate_and_init_lappx (glisize, xf, xc, dxf, dxc);
+  domain->lapuxy = allocate_and_init_lapuxy(glisize, xf, dy);
+  domain->lapuyy = allocate_and_init_lapuyy(glisize, xc, dy);
+  domain->lapuzy = allocate_and_init_lapuzy(glisize, xc, dy);
+  domain->lappy  = allocate_and_init_lappy (glisize, xc, dy);
+  domain->lapuxz =              init_lapuxz(dz);
+  domain->lapuyz =              init_lapuyz(dz);
+  domain->lapuzz =              init_lapuzz(dz);
+  domain->lappz  =              init_lappz (dz);
   return domain;
 }
 

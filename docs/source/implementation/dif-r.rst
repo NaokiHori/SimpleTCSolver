@@ -264,7 +264,7 @@ Implementation
 
 .. myliteralinclude:: /../../src/domain/coordinate.c
    :language: c
-   :tag: uxdifx
+   :tag: lapuxx
 
 .. myliteralinclude:: /../../src/fluid/compute_rhs/ux.c
    :language: c
@@ -278,7 +278,7 @@ Implementation
 
 .. myliteralinclude:: /../../src/domain/coordinate.c
    :language: c
-   :tag: uxdify
+   :tag: lapuxy
 
 .. myliteralinclude:: /../../src/fluid/compute_rhs/ux.c
    :language: c
@@ -292,7 +292,7 @@ Implementation
 
 .. myliteralinclude:: /../../src/domain/coordinate.c
    :language: c
-   :tag: uxdifz
+   :tag: lapuxz
 
 .. myliteralinclude:: /../../src/fluid/compute_rhs/ux.c
    :language: c

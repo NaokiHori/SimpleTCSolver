@@ -19,28 +19,36 @@
 #define DXC_SIZE (isize+2)
 #define DXC(N) (dxc[N])
 
-/* uxdifx */
-#define UXDIFX_SIZE (isize-1)
-#define UXDIFX(N) (uxdifx[N-2])
+/* lapuxx */
+#define LAPUXX_SIZE (isize-1)
+#define LAPUXX(N) (lapuxx[N-2])
 
-/* uydifx */
-#define UYDIFX_SIZE (isize)
-#define UYDIFX(N) (uydifx[N-1])
+/* lapuyx */
+#define LAPUYX_SIZE (isize)
+#define LAPUYX(N) (lapuyx[N-1])
 
-/* uzdifx */
-#define UZDIFX_SIZE (isize)
-#define UZDIFX(N) (uzdifx[N-1])
+/* lapuzx */
+#define LAPUZX_SIZE (isize)
+#define LAPUZX(N) (lapuzx[N-1])
 
-/* uxdify */
-#define UXDIFY_SIZE (isize)
-#define UXDIFY(N) (uxdify[N-2])
+/* lapuxy */
+#define LAPUXY_SIZE (isize)
+#define LAPUXY(N) (lapuxy[N-2])
 
-/* uydify */
-#define UYDIFY_SIZE (isize)
-#define UYDIFY(N) (uydify[N-1])
+/* lapuyy */
+#define LAPUYY_SIZE (isize)
+#define LAPUYY(N) (lapuyy[N-1])
 
-/* uzdify */
-#define UZDIFY_SIZE (isize)
-#define UZDIFY(N) (uzdify[N-1])
+/* lapuzy */
+#define LAPUZY_SIZE (isize)
+#define LAPUZY(N) (lapuzy[N-1])
+
+/* lappx */
+#define LAPPX_SIZE (isize)
+#define LAPPX(N) (lappx[N-1])
+
+/* lappy */
+#define LAPPY_SIZE (isize)
+#define LAPPY(N) (lappy[N-1])
 
 #endif // ARRAYS_{name}_H

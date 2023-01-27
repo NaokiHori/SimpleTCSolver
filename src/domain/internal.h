@@ -9,17 +9,20 @@ extern double *allocate_and_init_xc(const int isize, const double *xf);
 extern double *allocate_and_init_dxf(const int isize, const double *xf);
 extern double *allocate_and_init_dxc(const int isize, const double *xc);
 
-extern laplace_t *allocate_and_init_uxdifx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc);
-extern laplace_t *allocate_and_init_uydifx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc);
-extern laplace_t *allocate_and_init_uzdifx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc);
+extern laplace_t *allocate_and_init_lapuxx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc);
+extern laplace_t *allocate_and_init_lapuyx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc);
+extern laplace_t *allocate_and_init_lapuzx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc);
+extern laplace_t *allocate_and_init_lappx (const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc);
 
-extern laplace_t *allocate_and_init_uxdify(const int isize, const double *xf, const double dy);
-extern laplace_t *allocate_and_init_uydify(const int isize, const double *xc, const double dy);
-extern laplace_t *allocate_and_init_uzdify(const int isize, const double *xc, const double dy);
+extern laplace_t *allocate_and_init_lapuxy(const int isize, const double *xf, const double dy);
+extern laplace_t *allocate_and_init_lapuyy(const int isize, const double *xc, const double dy);
+extern laplace_t *allocate_and_init_lapuzy(const int isize, const double *xc, const double dy);
+extern laplace_t *allocate_and_init_lappy (const int isize, const double *xc, const double dy);
 
-extern laplace_t init_uxdifz(const double dz);
-extern laplace_t init_uydifz(const double dz);
-extern laplace_t init_uzdifz(const double dz);
+extern laplace_t init_lapuxz(const double dz);
+extern laplace_t init_lapuyz(const double dz);
+extern laplace_t init_lapuzz(const double dz);
+extern laplace_t init_lappz (const double dz);
 
 // init.c
 extern domain_t *domain_init(void);

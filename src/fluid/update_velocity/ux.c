@@ -24,13 +24,13 @@ static void solve_linear_systems_in_x(const domain_t * restrict domain, const do
   double * restrict tdm_l = linear_system->tdm_l;
   double * restrict tdm_c = linear_system->tdm_c;
   double * restrict tdm_u = linear_system->tdm_u;
-  const laplace_t * restrict uxdifx = domain->uxdifx;
+  const laplace_t * restrict lapuxx = domain->lapuxx;
   // set diagonal components of linear system
   for(int i = 0; i < isize; i++){
-    // N.B. UXDIFX(2) <-> i = 0
-    tdm_l[i] =    - prefactor * UXDIFX(i+2).l;
-    tdm_c[i] = 1. - prefactor * UXDIFX(i+2).c;
-    tdm_u[i] =    - prefactor * UXDIFX(i+2).u;
+    // N.B. LAPUXX(2) <-> i = 0
+    tdm_l[i] =    - prefactor * LAPUXX(i+2).l;
+    tdm_c[i] = 1. - prefactor * LAPUXX(i+2).c;
+    tdm_u[i] =    - prefactor * LAPUXX(i+2).u;
   }
   tdm_solve_double(
       /* size of system  */ isize,
@@ -53,15 +53,15 @@ static void solve_linear_systems_in_y(const domain_t * restrict domain, const do
   double * restrict tdm_l = linear_system->tdm_l;
   double * restrict tdm_c = linear_system->tdm_c;
   double * restrict tdm_u = linear_system->tdm_u;
-  const laplace_t * restrict uxdify = domain->uxdify;
+  const laplace_t * restrict lapuxy = domain->lapuxy;
   // for each x (this is needed since Laplacian varies in x)
   for(int i = ioffs; i < isize + ioffs; i++){
     // set diagonal components of linear system
     for(int j = 0; j < jsize; j++){
-      // N.B. UXDIFY(2) <-> i = 0
-      tdm_l[j] =    - prefactor * UXDIFY(i+2).l;
-      tdm_c[j] = 1. - prefactor * UXDIFY(i+2).c;
-      tdm_u[j] =    - prefactor * UXDIFY(i+2).u;
+      // N.B. LAPUXY(2) <-> i = 0
+      tdm_l[j] =    - prefactor * LAPUXY(i+2).l;
+      tdm_c[j] = 1. - prefactor * LAPUXY(i+2).c;
+      tdm_u[j] =    - prefactor * LAPUXY(i+2).u;
     }
     tdm_solve_double(
         /* size of system  */ jsize,
@@ -84,12 +84,12 @@ static void solve_linear_systems_in_z(const domain_t * restrict domain, const do
   double * restrict tdm_l = linear_system->tdm_l;
   double * restrict tdm_c = linear_system->tdm_c;
   double * restrict tdm_u = linear_system->tdm_u;
-  const laplace_t uxdifz = domain->uxdifz;
+  const laplace_t lapuxz = domain->lapuxz;
   // set diagonal components of linear system
   for(int k = 0; k < ksize; k++){
-    tdm_l[k] =    - prefactor * uxdifz.l;
-    tdm_c[k] = 1. - prefactor * uxdifz.c;
-    tdm_u[k] =    - prefactor * uxdifz.u;
+    tdm_l[k] =    - prefactor * lapuxz.l;
+    tdm_c[k] = 1. - prefactor * lapuxz.c;
+    tdm_u[k] =    - prefactor * lapuxz.u;
   }
   tdm_solve_double(
       /* size of system  */ ksize,

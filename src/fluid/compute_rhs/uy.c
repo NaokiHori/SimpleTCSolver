@@ -24,9 +24,9 @@ int compute_rhs_uy(const domain_t * restrict domain, const int rkstep, fluid_t *
   const double * restrict xf = domain->xf;
   const double * restrict xc = domain->xc;
   const double * restrict dxf = domain->dxf;
-  const laplace_t * restrict uydifx = domain->uydifx;
-  const laplace_t * restrict uydify = domain->uydify;
-  const laplace_t            uydifz = domain->uydifz;
+  const laplace_t * restrict lapuyx = domain->lapuyx;
+  const laplace_t * restrict lapuyy = domain->lapuyy;
+  const laplace_t            lapuyz = domain->lapuyz;
   const double dy = domain->dy;
   const double dz = domain->dz;
   const double * restrict ux = fluid->ux;
@@ -110,21 +110,21 @@ int compute_rhs_uy(const domain_t * restrict domain, const int rkstep, fluid_t *
         /* diffusion */
         /* ! diffused in r ! 5 ! */
         const double difx = + 1. / Re * (
-            + UYDIFX(i).l * UY(i-1, j  , k  )
-            + UYDIFX(i).c * UY(i  , j  , k  )
-            + UYDIFX(i).u * UY(i+1, j  , k  )
+            + LAPUYX(i).l * UY(i-1, j  , k  )
+            + LAPUYX(i).c * UY(i  , j  , k  )
+            + LAPUYX(i).u * UY(i+1, j  , k  )
         );
         /* ! diffused in t ! 5 ! */
         const double dify = + 1. / Re * (
-            + UYDIFY(i).l * UY(i  , j-1, k  )
-            + UYDIFY(i).c * UY(i  , j  , k  )
-            + UYDIFY(i).u * UY(i  , j+1, k  )
+            + LAPUYY(i).l * UY(i  , j-1, k  )
+            + LAPUYY(i).c * UY(i  , j  , k  )
+            + LAPUYY(i).u * UY(i  , j+1, k  )
         );
         /* ! diffused in z ! 5 ! */
         const double difz = + 1. / Re * (
-            + uydifz.l    * UY(i  , j  , k-1)
-            + uydifz.c    * UY(i  , j  , k  )
-            + uydifz.u    * UY(i  , j  , k+1)
+            + lapuyz.l    * UY(i  , j  , k-1)
+            + lapuyz.c    * UY(i  , j  , k  )
+            + lapuyz.u    * UY(i  , j  , k+1)
         );
         /* ! additional diffusive term 0 ! 13 ! */
         double difa0;

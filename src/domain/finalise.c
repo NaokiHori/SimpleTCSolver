@@ -17,6 +17,14 @@ int domain_finalise(domain_t *domain){
   common_free(domain->mysizes);
   common_free(domain->offsets);
   common_free(domain->lengths);
+  common_free(domain->lapuxx);
+  common_free(domain->lapuyx);
+  common_free(domain->lapuzx);
+  common_free(domain->lappx );
+  common_free(domain->lapuxy);
+  common_free(domain->lapuyy);
+  common_free(domain->lapuzy);
+  common_free(domain->lappy );
   sdecomp_finalise(domain->sdecomp);
   common_free(domain);
   return 0;

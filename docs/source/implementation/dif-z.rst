@@ -197,7 +197,7 @@ Implementation
 
 .. myliteralinclude:: /../../src/domain/coordinate.c
    :language: c
-   :tag: uzdifx
+   :tag: lapuzx
 
 .. myliteralinclude:: /../../src/fluid/compute_rhs/uz.c
    :language: c
@@ -211,7 +211,7 @@ Implementation
 
 .. myliteralinclude:: /../../src/domain/coordinate.c
    :language: c
-   :tag: uzdify
+   :tag: lapuzy
 
 .. myliteralinclude:: /../../src/fluid/compute_rhs/uz.c
    :language: c
@@ -225,7 +225,7 @@ Implementation
 
 .. myliteralinclude:: /../../src/domain/coordinate.c
    :language: c
-   :tag: uzdifz
+   :tag: lapuzz
 
 .. myliteralinclude:: /../../src/fluid/compute_rhs/uz.c
    :language: c

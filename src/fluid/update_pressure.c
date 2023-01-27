@@ -29,68 +29,55 @@ int fluid_update_pressure(const domain_t * restrict domain, const int rkstep, co
       }
     }
   }
-  /* ! correction for implicit treatment in x ! 23 ! */
+  /* ! correction for implicit treatment in x ! 17 ! */
   if(config.get_bool("implicitx")){
     const double Re = config.get_double("Re");
     const double gamma = RKCOEFS[rkstep].gamma;
     const double prefactor = (gamma * dt) / (2. * Re);
-    const double * restrict xf = domain->xf;
-    const double * restrict xc = domain->xc;
-    const double * restrict dxf = domain->dxf;
-    const double * restrict dxc = domain->dxc;
+    const laplace_t * restrict lappx = domain->lappx;
     for(int k = 1; k <= ksize; k++){
       for(int j = 1; j <= jsize; j++){
         for(int i = 1; i <= isize; i++){
-          const double c_xm = XF(i  ) / DXC(i  );
-          const double c_xp = XF(i+1) / DXC(i+1);
-          const double dpsi_xm = - PSI(i-1, j  , k  ) + PSI(i  , j  , k  );
-          const double dpsi_xp = - PSI(i  , j  , k  ) + PSI(i+1, j  , k  );
-          P(i, j, k) -= prefactor / XC(i  ) / DXF(i  ) * (
-              - c_xm * dpsi_xm
-              + c_xp * dpsi_xp
+          P(i, j, k) -= prefactor * (
+              + LAPPX(i).l * PSI(i-1, j  , k  )
+              + LAPPX(i).c * PSI(i  , j  , k  )
+              + LAPPX(i).u * PSI(i+1, j  , k  )
           );
         }
       }
     }
   }
-  /* ! correction for implicit treatment in y ! 21 ! */
+  /* ! correction for implicit treatment in y ! 17 ! */
   if(config.get_bool("implicity")){
     const double Re = config.get_double("Re");
     const double gamma = RKCOEFS[rkstep].gamma;
     const double prefactor = (gamma * dt) / (2. * Re);
-    const double * restrict xf = domain->xf;
-    const double dy = domain->dy;
+    const laplace_t * restrict lappy = domain->lappy;
     for(int k = 1; k <= ksize; k++){
       for(int j = 1; j <= jsize; j++){
         for(int i = 1; i <= isize; i++){
-          const double c_ym = 1. / XF(i  ) / dy;
-          const double c_yp = 1. / XF(i  ) / dy;
-          const double dpsi_ym = - PSI(i  , j-1, k  ) + PSI(i  , j  , k  );
-          const double dpsi_yp = - PSI(i  , j  , k  ) + PSI(i  , j+1, k  );
-          P(i, j, k) -= prefactor / XF(i  ) / dy * (
-              - c_ym * dpsi_ym
-              + c_yp * dpsi_yp
+          P(i, j, k) -= prefactor * (
+              + LAPPY(i).l * PSI(i  , j-1, k  )
+              + LAPPY(i).c * PSI(i  , j  , k  )
+              + LAPPY(i).u * PSI(i  , j+1, k  )
           );
         }
       }
     }
   }
-  /* ! correction for implicit treatment in z ! 20 ! */
+  /* ! correction for implicit treatment in z ! 17 ! */
   if(config.get_bool("implicitz")){
     const double Re = config.get_double("Re");
     const double gamma = RKCOEFS[rkstep].gamma;
     const double prefactor = (gamma * dt) / (2. * Re);
-    const double dz = domain->dz;
+    const laplace_t lappz = domain->lappz;
     for(int k = 1; k <= ksize; k++){
       for(int j = 1; j <= jsize; j++){
         for(int i = 1; i <= isize; i++){
-          const double c_zm = 1. / dz;
-          const double c_zp = 1. / dz;
-          const double dpsi_zm = - PSI(i  , j  , k-1) + PSI(i  , j  , k  );
-          const double dpsi_zp = - PSI(i  , j  , k  ) + PSI(i  , j  , k+1);
-          P(i, j, k) -= prefactor / dz * (
-              - c_zm * dpsi_zm
-              + c_zp * dpsi_zp
+          P(i, j, k) -= prefactor * (
+              + lappz.l * PSI(i  , j  , k-1)
+              + lappz.c * PSI(i  , j  , k  )
+              + lappz.u * PSI(i  , j  , k+1)
           );
         }
       }

@@ -227,7 +227,7 @@ Implementation
 
 .. myliteralinclude:: /../../src/domain/coordinate.c
    :language: c
-   :tag: uydifx
+   :tag: lapuyx
 
 .. myliteralinclude:: /../../src/fluid/compute_rhs/uy.c
    :language: c
@@ -241,7 +241,7 @@ Implementation
 
 .. myliteralinclude:: /../../src/domain/coordinate.c
    :language: c
-   :tag: uydify
+   :tag: lapuyy
 
 .. myliteralinclude:: /../../src/fluid/compute_rhs/uy.c
    :language: c
@@ -255,7 +255,7 @@ Implementation
 
 .. myliteralinclude:: /../../src/domain/coordinate.c
    :language: c
-   :tag: uydifz
+   :tag: lapuyz
 
 .. myliteralinclude:: /../../src/fluid/compute_rhs/uy.c
    :language: c

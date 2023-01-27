@@ -96,116 +96,151 @@ double *allocate_and_init_dxc(const int isize, const double *xc){
 }
 
 // discrete Laplace operator in x direction with respect to ux
-laplace_t *allocate_and_init_uxdifx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc){
-  laplace_t *uxdifx = common_calloc(UXDIFX_SIZE, sizeof(laplace_t));
-  /* ! uxdifx ! 6 ! */
+laplace_t *allocate_and_init_lapuxx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc){
+  laplace_t *lapuxx = common_calloc(LAPUXX_SIZE, sizeof(laplace_t));
+  /* ! lapuxx ! 6 ! */
   for(int i = 2; i <= isize; i++){
-    UXDIFX(i).l = + XF(i-1) / DXF(i-1) / XC(i-1) / DXC(i  );
-    UXDIFX(i).u = + XF(i+1) / DXF(i  ) / XC(i  ) / DXC(i  );
-    UXDIFX(i).c = - XF(i  ) / DXF(i-1) / XC(i-1) / DXC(i  )
+    LAPUXX(i).l = + XF(i-1) / DXF(i-1) / XC(i-1) / DXC(i  );
+    LAPUXX(i).u = + XF(i+1) / DXF(i  ) / XC(i  ) / DXC(i  );
+    LAPUXX(i).c = - XF(i  ) / DXF(i-1) / XC(i-1) / DXC(i  )
                   - XF(i  ) / DXF(i  ) / XC(i  ) / DXC(i  );
   }
-  return uxdifx;
+  return lapuxx;
 }
 
 // discrete Laplace operator in x direction with respect to uy
-laplace_t *allocate_and_init_uydifx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc){
-  laplace_t *uydifx = common_calloc(UYDIFX_SIZE, sizeof(laplace_t));
-  /* ! uydifx ! 6 ! */
+laplace_t *allocate_and_init_lapuyx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc){
+  laplace_t *lapuyx = common_calloc(LAPUYX_SIZE, sizeof(laplace_t));
+  /* ! lapuyx ! 6 ! */
   for(int i = 1; i <= isize; i++){
-    UYDIFX(i).l = + 1. / XC(i-1) / DXC(i  ) * pow(XF(i  ), 3.) / DXF(i  ) / pow(XC(i  ), 2.);
-    UYDIFX(i).u = + 1. / XC(i+1) / DXC(i+1) * pow(XF(i+1), 3.) / DXF(i  ) / pow(XC(i  ), 2.);
-    UYDIFX(i).c = - 1. / XC(i  ) / DXC(i  ) * pow(XF(i  ), 3.) / DXF(i  ) / pow(XC(i  ), 2.)
+    LAPUYX(i).l = + 1. / XC(i-1) / DXC(i  ) * pow(XF(i  ), 3.) / DXF(i  ) / pow(XC(i  ), 2.);
+    LAPUYX(i).u = + 1. / XC(i+1) / DXC(i+1) * pow(XF(i+1), 3.) / DXF(i  ) / pow(XC(i  ), 2.);
+    LAPUYX(i).c = - 1. / XC(i  ) / DXC(i  ) * pow(XF(i  ), 3.) / DXF(i  ) / pow(XC(i  ), 2.)
                   - 1. / XC(i  ) / DXC(i+1) * pow(XF(i+1), 3.) / DXF(i  ) / pow(XC(i  ), 2.);
   }
-  return uydifx;
+  return lapuyx;
 }
 
 // discrete Laplace operator in x direction with respect to uz
-laplace_t *allocate_and_init_uzdifx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc){
-  laplace_t *uzdifx = common_calloc(UZDIFX_SIZE, sizeof(laplace_t));
-  /* ! uzdifx ! 6 ! */
+laplace_t *allocate_and_init_lapuzx(const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc){
+  laplace_t *lapuzx = common_calloc(LAPUZX_SIZE, sizeof(laplace_t));
+  /* ! lapuzx ! 6 ! */
   for(int i = 1; i <= isize; i++){
-    UZDIFX(i).l = + 1. / DXC(i  ) * XF(i  ) / DXF(i  ) / XC(i  );
-    UZDIFX(i).u = + 1. / DXC(i+1) * XF(i+1) / DXF(i  ) / XC(i  );
-    UZDIFX(i).c = - 1. / DXC(i  ) * XF(i  ) / DXF(i  ) / XC(i  )
+    LAPUZX(i).l = + 1. / DXC(i  ) * XF(i  ) / DXF(i  ) / XC(i  );
+    LAPUZX(i).u = + 1. / DXC(i+1) * XF(i+1) / DXF(i  ) / XC(i  );
+    LAPUZX(i).c = - 1. / DXC(i  ) * XF(i  ) / DXF(i  ) / XC(i  )
                   - 1. / DXC(i+1) * XF(i+1) / DXF(i  ) / XC(i  );
   }
-  return uzdifx;
+  return lapuzx;
+}
+
+// discrete Laplace operator in x direction with respect to p and psi
+laplace_t *allocate_and_init_lappx (const int isize, const double *xf, const double *xc, const double *dxf, const double *dxc){
+  laplace_t *lappx = common_calloc(LAPPX_SIZE, sizeof(laplace_t));
+  for(int i = 1; i <= isize; i++){
+    LAPPX(i).l = + 1. / DXC(i  ) * XF(i  ) / DXF(i  ) / XC(i  );
+    LAPPX(i).u = + 1. / DXC(i+1) * XF(i+1) / DXF(i  ) / XC(i  );
+    LAPPX(i).c = - 1. / DXC(i  ) * XF(i  ) / DXF(i  ) / XC(i  )
+                 - 1. / DXC(i+1) * XF(i+1) / DXF(i  ) / XC(i  );
+  }
+  return lappx;
 }
 
 // discrete Laplace operator in y direction with respect to ux
-laplace_t *allocate_and_init_uxdify(const int isize, const double *xf, const double dy){
-  laplace_t *uxdify = common_calloc(UXDIFY_SIZE, sizeof(laplace_t));
-  /* ! uxdify ! 6 ! */
+laplace_t *allocate_and_init_lapuxy(const int isize, const double *xf, const double dy){
+  laplace_t *lapuxy = common_calloc(LAPUXY_SIZE, sizeof(laplace_t));
+  /* ! lapuxy ! 6 ! */
   for(int i = 2; i <= isize; i++){
     // for each x
-    UXDIFY(i).l = + 1. / XF(i  ) / XF(i  ) / dy / dy;
-    UXDIFY(i).u = + 1. / XF(i  ) / XF(i  ) / dy / dy;
-    UXDIFY(i).c = - 2. / XF(i  ) / XF(i  ) / dy / dy;
+    LAPUXY(i).l = + 1. / XF(i  ) / XF(i  ) / dy / dy;
+    LAPUXY(i).u = + 1. / XF(i  ) / XF(i  ) / dy / dy;
+    LAPUXY(i).c = - 2. / XF(i  ) / XF(i  ) / dy / dy;
   }
-  return uxdify;
+  return lapuxy;
 }
 
 // discrete Laplace operator in y direction with respect to uy
-laplace_t *allocate_and_init_uydify(const int isize, const double *xc, const double dy){
-  laplace_t *uydify = common_calloc(UYDIFY_SIZE, sizeof(laplace_t));
-  /* ! uydify ! 6 ! */
+laplace_t *allocate_and_init_lapuyy(const int isize, const double *xc, const double dy){
+  laplace_t *lapuyy = common_calloc(LAPUYY_SIZE, sizeof(laplace_t));
+  /* ! lapuyy ! 6 ! */
   for(int i = 1; i <= isize; i++){
     // for each x
-    UYDIFY(i).l = + 1. / XC(i  ) / XC(i  ) / dy / dy;
-    UYDIFY(i).u = + 1. / XC(i  ) / XC(i  ) / dy / dy;
-    UYDIFY(i).c = - 2. / XC(i  ) / XC(i  ) / dy / dy;
+    LAPUYY(i).l = + 1. / XC(i  ) / XC(i  ) / dy / dy;
+    LAPUYY(i).u = + 1. / XC(i  ) / XC(i  ) / dy / dy;
+    LAPUYY(i).c = - 2. / XC(i  ) / XC(i  ) / dy / dy;
   }
-  return uydify;
+  return lapuyy;
 }
 
 // discrete Laplace operator in y direction with respect to uz
-laplace_t *allocate_and_init_uzdify(const int isize, const double *xc, const double dy){
-  laplace_t *uzdify = common_calloc(UZDIFY_SIZE, sizeof(laplace_t));
-  /* ! uzdify ! 6 ! */
+laplace_t *allocate_and_init_lapuzy(const int isize, const double *xc, const double dy){
+  laplace_t *lapuzy = common_calloc(LAPUZY_SIZE, sizeof(laplace_t));
+  /* ! lapuzy ! 6 ! */
   for(int i = 1; i <= isize; i++){
     // for each x
-    UZDIFY(i).l = + 1. / XC(i  ) / XC(i  ) / dy / dy;
-    UZDIFY(i).u = + 1. / XC(i  ) / XC(i  ) / dy / dy;
-    UZDIFY(i).c = - 2. / XC(i  ) / XC(i  ) / dy / dy;
+    LAPUZY(i).l = + 1. / XC(i  ) / XC(i  ) / dy / dy;
+    LAPUZY(i).u = + 1. / XC(i  ) / XC(i  ) / dy / dy;
+    LAPUZY(i).c = - 2. / XC(i  ) / XC(i  ) / dy / dy;
   }
-  return uzdify;
+  return lapuzy;
+}
+
+// discrete Laplace operator in y direction with respect to p
+laplace_t *allocate_and_init_lappy (const int isize, const double *xc, const double dy){
+  laplace_t *lappy = common_calloc(LAPPY_SIZE, sizeof(laplace_t));
+  for(int i = 1; i <= isize; i++){
+    // for each x
+    LAPPY(i).l = + 1. / XC(i  ) / XC(i  ) / dy / dy;
+    LAPPY(i).u = + 1. / XC(i  ) / XC(i  ) / dy / dy;
+    LAPPY(i).c = - 2. / XC(i  ) / XC(i  ) / dy / dy;
+  }
+  return lappy;
 }
 
 // discrete Laplace operator in z direction with respect to ux
-laplace_t init_uxdifz(const double dz){
-  /* ! uxdifz ! 6 ! */
-  const laplace_t uxdifz = {
+laplace_t init_lapuxz(const double dz){
+  /* ! lapuxz ! 6 ! */
+  const laplace_t lapuxz = {
     // constant for all x and y directions
     .l = + 1. / dz / dz,
     .u = + 1. / dz / dz,
     .c = - 2. / dz / dz
   };
-  return uxdifz;
+  return lapuxz;
 }
 
 // discrete Laplace operator in z direction with respect to uy
-laplace_t init_uydifz(const double dz){
-  /* ! uydifz ! 6 ! */
-  const laplace_t uydifz = {
+laplace_t init_lapuyz(const double dz){
+  /* ! lapuyz ! 6 ! */
+  const laplace_t lapuyz = {
     // constant for all x and y directions
     .l = + 1. / dz / dz,
     .u = + 1. / dz / dz,
     .c = - 2. / dz / dz
   };
-  return uydifz;
+  return lapuyz;
 }
 
 // discrete Laplace operator in z direction with respect to uz
-laplace_t init_uzdifz(const double dz){
-  /* ! uzdifz ! 6 ! */
-  const laplace_t uzdifz = {
+laplace_t init_lapuzz(const double dz){
+  /* ! lapuzz ! 6 ! */
+  const laplace_t lapuzz = {
     // constant for all x and y directions
     .l = + 1. / dz / dz,
     .u = + 1. / dz / dz,
     .c = - 2. / dz / dz
   };
-  return uzdifz;
+  return lapuzz;
+}
+
+// discrete Laplace operator in z direction with respect to p
+laplace_t init_lappz(const double dz){
+  const laplace_t lappz = {
+    // constant for all x and y directions
+    .l = + 1. / dz / dz,
+    .u = + 1. / dz / dz,
+    .c = - 2. / dz / dz
+  };
+  return lappz;
 }
 
