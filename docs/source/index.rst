@@ -6,7 +6,6 @@ SimpleTCSolver
    :width: 800
 
 .. toctree::
-   :caption: Table of Contents
    :maxdepth: 1
 
    derivation/index

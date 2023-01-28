@@ -1,3 +1,5 @@
+.. |FUKAGATA2002|  replace:: Fukagata and Kasagi, *J. Comput. Phys.* (**181**), 2002
 .. |MORINISHI2004| replace:: Morinishi et al., *J. Comput. Phys.* (**197**), 2004
 .. |BARBOSA2005|   replace:: Barbosa and Daube, *Comput. Fluids* (**34**), 2005
 .. |ECKHARDT2007|  replace:: Eckhardt et al., *J. Fluid Mech.* (**581**), 2007
+.. |OUD2016|       replace:: Oud et al., *J. Comput. Phys.* (**325**), 2016

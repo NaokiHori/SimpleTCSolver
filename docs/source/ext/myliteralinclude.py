@@ -59,6 +59,23 @@ def get_lines(filename, tag):
         retval.append((f"{s}-{e}", s))
     return retval
 
+def remove_head_spaces(lines):
+    lines = lines.split("\n")[:-1]
+    nspaces = 0
+    for lcnt, line in enumerate(lines):
+        for ccnt, char in enumerate(line):
+            if char != " ":
+                if lcnt == 0:
+                    nspaces = ccnt
+                else:
+                    nspaces = min(nspaces, ccnt)
+                break
+    newlines = list()
+    for line in lines:
+        newlines.append(line[nspaces:])
+    newlines = "\n".join(newlines)
+    return newlines
+
 def container_wrapper(directive: SphinxDirective, literal_node: Node, caption: str) -> nodes.container:  # NOQA
     container_node = nodes.container('', literal_block=True,
                                      classes=['literal-block-wrapper'])
@@ -107,6 +124,7 @@ class MyLiteralInclude(SphinxDirective):
                 self.options['lines'], self.options['lineno-start'] = pair[0], pair[1]
                 reader = LiteralIncludeReader(filename, self.options, self.config)
                 text, lines = reader.read(location=location)
+                text = remove_head_spaces(text)
                 retnode: Element = nodes.literal_block(text, text, source=filename)
                 retnode['force'] = 'force' in self.options
                 self.set_source_info(retnode)
