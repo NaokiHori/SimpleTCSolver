@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <math.h>
 #include <float.h>
 #include "array.h"
@@ -13,6 +14,14 @@
 #include "arrays/fluid/uz.h"
 #include "arrays/fluid/p.h"
 
+// parameters deciding directory name
+static const char dirname_prefix[] = {"output/save/step"};
+static const int dirname_ndigits = 10;
+
+// name of directory
+static char * restrict g_dirname = NULL;
+static size_t g_dirname_nchars = 0;
+
 static double g_rate = 0.;
 static double g_next = 0.;
 
@@ -20,78 +29,71 @@ static double g_next = 0.;
  * @brief constructor - schedule saving flow fields
  * @param[in] domain : MPI communicator
  * @param[in] time   : current time (hereafter in free-fall time units)
- * @param[in] rate   : output rate
- * @param[in] after  : information is saved after this time
  */
-static void init(const domain_t *domain, const double time, const double rate, const double after){
-  const double next = rate * ceil(
-      fmax(DBL_EPSILON, fmax(time, after)) / rate
-  );
-  g_rate = rate;
-  g_next = next;
-  MPI_Comm comm_cart = MPI_COMM_NULL;
-  sdecomp.get_comm_cart(domain->info, &comm_cart);
-  int myrank = 0;
-  MPI_Comm_rank(comm_cart, &myrank);
-  if(myrank == 0){
-    printf("save       initialised, next output : % .3e\n", g_next);
+static int init(const domain_t * restrict domain, const double time){
+  // fetch timings
+  if(0 != config.get_double("save_rate", &g_rate)){
+    return 1;
   }
+  double after = 0.;
+  if(0 != config.get_double("save_after", &after)){
+    return 1;
+  }
+  // schedule next event
+  g_next = g_rate * ceil(
+      fmax(DBL_EPSILON, fmax(time, after)) / g_rate
+  );
+  // allocate directory name
+  g_dirname_nchars =
+    + strlen(dirname_prefix)
+    + dirname_ndigits;
+  g_dirname = common_calloc(g_dirname_nchars + 2, sizeof(char));
+  // report
+  int myrank = 0;
+  sdecomp.get_comm_rank(domain->info, &myrank);
+  if(myrank == 0){
+    printf("SAVE\n");
+    printf("\tnext: % .3e\n", g_next);
+    printf("\trate: % .3e\n", g_rate);
+    fflush(stdout);
+  }
+  return 0;
 }
 
 /**
  * @brief destructor
  */
 static void finalise(void){
+  common_free(g_dirname);
 }
 
 /**
- * @brief output flow fields etc. to files
- *          which contain essential information to restart
- * @param[in] domain : information related to MPI domain decomposition
- * @param[in] step   : time step
- * @param[in] time   : current time units
- * @param[in] fluid  : velocity and pressure
+ * @brief prepare place to output flow fields and save auxiliary data
+ * @param[in]  domain  : information related to MPI domain decomposition
+ * @param[in]  step    : time step
+ * @param[in]  time    : current time units
+ * @param[out] dirname : name of created directory
  */
-static void output(const domain_t *domain, const int step, const double time, const fluid_t *fluid){
+static int prepare(const domain_t * restrict domain, const int step, const double time, char * restrict * dirname){
+  // set directory name
+  snprintf(g_dirname, g_dirname_nchars + 1, "%s%0*d", dirname_prefix, dirname_ndigits, step);
+  *dirname = g_dirname;
   // get communicator to identify the main process
-  MPI_Comm comm_cart = MPI_COMM_NULL;
-  sdecomp.get_comm_cart(domain->info, &comm_cart);
   int myrank = 0;
-  MPI_Comm_rank(comm_cart, &myrank);
-  // create directory from main process
-  const char prefix[] = {"output/save/step"};
-  char *dirname = fileio_create_dirname(prefix, step);
-  if(NULL == dirname){
-    return;
-  }
+  sdecomp.get_comm_rank(domain->info, &myrank);
+  // create directory and save time step / time units
   if(0 == myrank){
-    // create directory
-    // this should be invoked only by the main process
-    fileio_mkdir(dirname);
+    // although it may fail, anyway continue, which is designed to be safe
+    fileio_mkdir(g_dirname);
+    // save current time step and time units
+    fileio_w_serial(g_dirname, "step", 0, NULL, NPY_INT, sizeof(   int), &step);
+    fileio_w_serial(g_dirname, "time", 0, NULL, NPY_DBL, sizeof(double), &time);
   }
-  // other processes wait for the completion
+  // wait for the main process to complete making directory
   MPI_Barrier(MPI_COMM_WORLD);
-  // save current time step and time units
-  if(0 == myrank){
-    fileio_w_serial(dirname, "step", 0, NULL, NPY_INT, sizeof   (int), &step);
-    fileio_w_serial(dirname, "time", 0, NULL, NPY_DBL, sizeof(double), &time);
-    config.output(dirname);
-  }
-  // save coordinates
-  if(0 == myrank){
-    domain_save(dirname, domain);
-  }
-  // ux
-  array_dump(comm_cart, dirname, "ux", fluid->ux);
-  // uy
-  array_dump(comm_cart, dirname, "uy", fluid->uy);
-  // uz
-  array_dump(comm_cart, dirname, "uz", fluid->uz);
-  // p
-  array_dump(comm_cart, dirname, "p", fluid->p);
-  common_free(dirname);
   // schedule next saving event
   g_next += g_rate;
+  return 0;
 }
 
 /**
@@ -105,7 +107,7 @@ static double get_next_time(void){
 const save_t save = {
   .init          = init,
   .finalise      = finalise,
-  .output        = output,
+  .prepare       = prepare,
   .get_next_time = get_next_time,
 };
 

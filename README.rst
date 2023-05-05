@@ -76,7 +76,7 @@ First, prepare the initial condition:
 
 .. code-block:: console
 
-   $ cd initial_conditions
+   $ cd initial_condition
    $ make output   # create directories for artifacts
    $ make all      # compile
    $ vi exec.sh    # change parameters if needed

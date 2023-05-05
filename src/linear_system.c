@@ -1,5 +1,5 @@
+#include "param.h"
 #include "common.h"
-#include "config.h"
 #include "sdecomp.h"
 #include "domain.h"
 #include "linear_system.h"
@@ -21,15 +21,12 @@ static size_t get_nitems(const size_t sizes[NDIMS]){
  * @return            : structure storing buffers and plans to solve linear systems in each direction
  */
 linear_system_t *init_linear_system(sdecomp_info_t * restrict info, const size_t glsizes[NDIMS]){
-  const bool implicitx = config.get.implicitx();
-  const bool implicity = config.get.implicity();
-  const bool implicitz = config.get.implicitz();
   // allocate main structure
   linear_system_t *linear_system = common_calloc(1, sizeof(linear_system_t));
   // pencils (and their sizes) to store input and output of linear systems
-  double **x1pncl = &linear_system->x1pncl;
-  double **y1pncl = &linear_system->y1pncl;
-  double **z2pncl = &linear_system->z2pncl;
+  double * restrict *x1pncl = &linear_system->x1pncl;
+  double * restrict *y1pncl = &linear_system->y1pncl;
+  double * restrict *z2pncl = &linear_system->z2pncl;
   // check size first
   size_t *x1pncl_mysizes = linear_system->x1pncl_mysizes;
   size_t *y1pncl_mysizes = linear_system->y1pncl_mysizes;
@@ -48,19 +45,19 @@ linear_system_t *init_linear_system(sdecomp_info_t * restrict info, const size_t
   // allocate pencils if needed
   // NOTE: x1pncl is not needed for fully-explicit case,
   //   but I always allocate it here for simplicity (to store delta values)
-  *x1pncl =             common_calloc(get_nitems(x1pncl_mysizes), sizeof(double));
-  *y1pncl = implicity ? common_calloc(get_nitems(y1pncl_mysizes), sizeof(double)) : NULL;
-  *z2pncl = implicitz ? common_calloc(get_nitems(z2pncl_mysizes), sizeof(double)) : NULL;
+  *x1pncl =                    common_calloc(get_nitems(x1pncl_mysizes), sizeof(double));
+  *y1pncl = param_implicit_y ? common_calloc(get_nitems(y1pncl_mysizes), sizeof(double)) : NULL;
+  *z2pncl = param_implicit_z ? common_calloc(get_nitems(z2pncl_mysizes), sizeof(double)) : NULL;
   // initialise parallel matrix transpose if needed
   // between x1 and y1
-  if(implicity){
+  if(param_implicit_y){
     sdecomp_transpose_plan_t **plan_f = &linear_system->transposer_x1_to_y1;
     sdecomp_transpose_plan_t **plan_b = &linear_system->transposer_y1_to_x1;
     sdecomp.transpose.construct(info, SDECOMP_X1PENCIL, SDECOMP_Y1PENCIL, glsizes, sizeof(double), plan_f);
     sdecomp.transpose.construct(info, SDECOMP_Y1PENCIL, SDECOMP_X1PENCIL, glsizes, sizeof(double), plan_b);
   }
   // between x1 and z2
-  if(implicitz){
+  if(param_implicit_z){
     sdecomp_transpose_plan_t **plan_f = &linear_system->transposer_x1_to_z2;
     sdecomp_transpose_plan_t **plan_b = &linear_system->transposer_z2_to_x1;
     sdecomp.transpose.construct(info, SDECOMP_X1PENCIL, SDECOMP_Z2PENCIL, glsizes, sizeof(double), plan_f);
@@ -68,7 +65,7 @@ linear_system_t *init_linear_system(sdecomp_info_t * restrict info, const size_t
   }
   // initialise tri-diagonal matrix solvers
   // Thomas algorithm in x direction
-  if(implicitx){
+  if(param_implicit_x){
     tdm.construct(
         /* size of system */ (int)(x1pncl_mysizes[0]),
         /* number of rhs  */ (int)(x1pncl_mysizes[1] * x1pncl_mysizes[2]),
@@ -78,17 +75,19 @@ linear_system_t *init_linear_system(sdecomp_info_t * restrict info, const size_t
     );
   }
   // Thomas algorithm in y direction
-  if(implicity){
+  // since coefficients vary for each x,
+  //   same matrix is repeated only in z
+  if(param_implicit_y){
     tdm.construct(
         /* size of system */ (int)(y1pncl_mysizes[1]),
-        /* number of rhs  */ (int)(y1pncl_mysizes[2]), // coefficients vary for each x
+        /* number of rhs  */ (int)(y1pncl_mysizes[2]),
         /* is periodic    */ true,
         /* is complex     */ false,
         /* output         */ &linear_system->tdm_y
     );
   }
   // Thomas algorithm in z direction
-  if(implicitz){
+  if(param_implicit_z){
     tdm.construct(
         /* size of system */ (int)(z2pncl_mysizes[2]),
         /* number of rhs  */ (int)(z2pncl_mysizes[0] * z2pncl_mysizes[1]),
@@ -101,21 +100,18 @@ linear_system_t *init_linear_system(sdecomp_info_t * restrict info, const size_t
 }
 
 int linear_system_finalise(linear_system_t * restrict linear_system){
-  const bool implicitx = config.get.implicitx();
-  const bool implicity = config.get.implicity();
-  const bool implicitz = config.get.implicitz();
   if(NULL != linear_system){
     common_free(linear_system->x1pncl);
-    if(implicitx){
+    if(param_implicit_x){
       tdm.destruct(linear_system->tdm_x);
     }
-    if(implicity){
+    if(param_implicit_y){
       common_free(linear_system->y1pncl);
       sdecomp.transpose.destruct(linear_system->transposer_x1_to_y1);
       sdecomp.transpose.destruct(linear_system->transposer_y1_to_x1);
       tdm.destruct(linear_system->tdm_y);
     }
-    if(implicitz){
+    if(param_implicit_z){
       common_free(linear_system->z2pncl);
       sdecomp.transpose.destruct(linear_system->transposer_x1_to_z2);
       sdecomp.transpose.destruct(linear_system->transposer_z2_to_x1);

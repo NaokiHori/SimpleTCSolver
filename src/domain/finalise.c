@@ -15,6 +15,11 @@ int domain_finalise(domain_t *domain){
   common_free(domain->uxlapx);
   common_free(domain->uylapx);
   common_free(domain->uzlapx);
+  common_free(domain->plapx);
+  common_free(domain->uxlapy);
+  common_free(domain->uylapy);
+  common_free(domain->uzlapy);
+  common_free(domain->plapy);
   common_free(domain->glsizes);
   common_free(domain->mysizes);
   common_free(domain->offsets);

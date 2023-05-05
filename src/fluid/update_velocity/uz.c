@@ -1,6 +1,6 @@
+#include "param.h"
 #include "sdecomp.h"
 #include "common.h"
-#include "config.h"
 #include "domain.h"
 #include "fluid.h"
 #include "linear_system.h"
@@ -15,9 +15,9 @@
 static linear_system_t *linear_system = NULL;
 
 static int compute_delta(const domain_t * restrict domain, const int rkstep, const double dt, fluid_t * restrict fluid){
-  const double alpha = RKCOEFS[rkstep].alpha;
-  const double beta  = RKCOEFS[rkstep].beta;
-  const double gamma = RKCOEFS[rkstep].gamma;
+  const double alpha = param_rkcoefs[rkstep].alpha;
+  const double beta  = param_rkcoefs[rkstep].beta;
+  const double gamma = param_rkcoefs[rkstep].gamma;
   const double adt = alpha * dt;
   const double bdt = beta  * dt;
   const double gdt = gamma * dt;
@@ -140,11 +140,11 @@ int fluid_update_velocity_uz(const domain_t * restrict domain, const int rkstep,
   compute_delta(domain, rkstep, dt, fluid);
   // gamma dt diffusivity / 2
   const double prefactor =
-    0.5 * RKCOEFS[rkstep].gamma * dt * fluid->diffusivity;
-  if(config.get.implicitx()){
+    0.5 * param_rkcoefs[rkstep].gamma * dt * fluid->diffusivity;
+  if(param_implicit_x){
     solve_in_x(domain, prefactor);
   }
-  if(config.get.implicity()){
+  if(param_implicit_y){
     sdecomp.transpose.execute(
         linear_system->transposer_x1_to_y1,
         linear_system->x1pncl,
@@ -157,7 +157,7 @@ int fluid_update_velocity_uz(const domain_t * restrict domain, const int rkstep,
         linear_system->x1pncl
     );
   }
-  if(config.get.implicitz()){
+  if(param_implicit_z){
     sdecomp.transpose.execute(
         linear_system->transposer_x1_to_z2,
         linear_system->x1pncl,

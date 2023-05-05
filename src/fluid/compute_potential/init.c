@@ -12,6 +12,11 @@
 #include "arrays/domain/plapx.h"
 #include "internal.h"
 
+// C99 does not specify M_PI in math.h
+#if !defined(M_PI)
+#define M_PI 3.1415926535897932
+#endif
+
 /* initialse Poisson solver */
 // several pencils for different data types are treated
 //   and thus this source is very complicated
@@ -159,7 +164,7 @@ static int init_tri_diagonal_solver(const domain_t *domain){
     /* is complex     */ true,
     /* output         */ tdm_info
   );
-  // initialise tri-diagonal matrix in x direction 
+  // initialise tri-diagonal matrix in x direction
   double *tdm_l = NULL;
   double *tdm_u = NULL;
   tdm.get_l(*tdm_info, &tdm_l);
@@ -304,7 +309,7 @@ static int init_eigenvalues(const domain_t *domain){
   sdecomp.get_pencil_offset(info, pencil, SDECOMP_ZDIR, c_gl_sizes[SDECOMP_ZDIR], &koffset);
   const double dy = domain->dy;
   const double dz = domain->dz;
-  // initialise eigenvalues in homogeneous directions 
+  // initialise eigenvalues in homogeneous directions
   *evalys = common_calloc(myjsize, sizeof(double));
   *evalzs = common_calloc(myksize, sizeof(double));
   for(size_t cnt = 0, j = joffset; j < myjsize + joffset; cnt++, j++){

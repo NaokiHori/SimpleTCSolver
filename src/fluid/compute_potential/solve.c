@@ -1,6 +1,6 @@
 #include <fftw3.h>
+#include "param.h"
 #include "common.h"
-#include "config.h"
 #include "domain.h"
 #include "sdecomp.h"
 #include "fluid.h"
@@ -21,7 +21,7 @@ static int assign_input(const domain_t * restrict domain, const int rkstep, cons
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
-  const double gamma = RKCOEFS[rkstep].gamma;
+  const double gamma = param_rkcoefs[rkstep].gamma;
   const double * restrict xf  = domain->xf;
   const double * restrict xc  = domain->xc;
   const double * restrict dxf = domain->dxf;
@@ -122,7 +122,7 @@ static int solve_linear_systems(const domain_t * restrict domain){
  *                       : (failure) 1
  */
 int fluid_compute_potential(const domain_t * restrict domain, const int rkstep, const double dt, fluid_t * restrict fluid){
-  // initialise Poisson solver 
+  // initialise Poisson solver
   if(NULL == poisson_solver){
     const int retval = fluid_compute_potential_init(domain);
     if(0 != retval) return 1;
@@ -134,67 +134,67 @@ int fluid_compute_potential(const domain_t * restrict domain, const int rkstep, 
       printf("Poisson solver initialised\n");
     }
   }
-  // compute right-hand side of Poisson equation 
+  // compute right-hand side of Poisson equation
   // assigned to buf0
   assign_input(domain, rkstep, dt, fluid);
   // solve the equation
   /* normal solver with DFT */
-  // dft solver, transpose real x1pencil to y1pencil 
+  // dft solver, transpose real x1pencil to y1pencil
   // from buf0 to buf1
   sdecomp.transpose.execute(
       poisson_solver->r_transposer_x1_to_y1,
       poisson_solver->buf0,
       poisson_solver->buf1
   );
-  // dft solver, project y to wave space 
+  // dft solver, project y to wave space
   // f(x, y)    -> f(x, k_y)
   // f(x, y, z) -> f(x, k_y, z)
   // from buf1 to buf0
   fftw_execute(poisson_solver->fftw_plan_y[0]);
-  // dft solver, transpose complex y1pencil to z1pencil 
+  // dft solver, transpose complex y1pencil to z1pencil
   // from buf0 to buf1
   sdecomp.transpose.execute(
       poisson_solver->c_transposer_y1_to_z1,
       poisson_solver->buf0,
       poisson_solver->buf1
   );
-  // dft solver, project z to wave space 
+  // dft solver, project z to wave space
   // f(x, k_y, z) -> f(x, k_y, k_z)
   // from buf1 to buf0
   fftw_execute(poisson_solver->fftw_plan_z[0]);
-  // dft solver, transpose complex z1pencil to x2pencil 
+  // dft solver, transpose complex z1pencil to x2pencil
   // from buf0 to buf1
   sdecomp.transpose.execute(
       poisson_solver->c_transposer_z1_to_x2,
       poisson_solver->buf0,
       poisson_solver->buf1
   );
-  // dft solver, solve linear systems 
+  // dft solver, solve linear systems
   solve_linear_systems(domain);
-  // dft solver, transpose complex x2pencil to z1pencil 
+  // dft solver, transpose complex x2pencil to z1pencil
   // from buf1 to buf0
   sdecomp.transpose.execute(
       poisson_solver->c_transposer_x2_to_z1,
       poisson_solver->buf1,
       poisson_solver->buf0
   );
-  // dft solver, project z to physical space 
+  // dft solver, project z to physical space
   // f(x, k_y, k_z) -> f(x, k_y, z)
   // from buf0 to buf1
   fftw_execute(poisson_solver->fftw_plan_z[1]);
-  // dft solver, transpose complex z1pencil to y1pencil 
+  // dft solver, transpose complex z1pencil to y1pencil
   // from buf1 to buf0
   sdecomp.transpose.execute(
       poisson_solver->c_transposer_z1_to_y1,
       poisson_solver->buf1,
       poisson_solver->buf0
   );
-  // dft solver, project y to physical space 
+  // dft solver, project y to physical space
   // f(x, k_y)    -> f(x, y)
   // f(x, k_y, z) -> f(x, y, z)
   // from buf0 to buf1
   fftw_execute(poisson_solver->fftw_plan_y[1]);
-  // dft solver, transpose real y1pencil to x1pencil 
+  // dft solver, transpose real y1pencil to x1pencil
   // from buf1 to buf0
   sdecomp.transpose.execute(
       poisson_solver->r_transposer_y1_to_x1,

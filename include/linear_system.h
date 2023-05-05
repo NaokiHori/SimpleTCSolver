@@ -21,9 +21,9 @@
  * @var transposer_xx_to_xx : plans to transpose between two pencils
  */
 typedef struct {
-  double *x1pncl;
-  double *y1pncl;
-  double *z2pncl;
+  double * restrict x1pncl;
+  double * restrict y1pncl;
+  double * restrict z2pncl;
   size_t x1pncl_mysizes[NDIMS];
   size_t y1pncl_mysizes[NDIMS];
   size_t z2pncl_mysizes[NDIMS];

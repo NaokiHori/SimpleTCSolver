@@ -1,6 +1,8 @@
 #include <stdio.h>
+#include <math.h>
 #include <float.h>
 #include "common.h"
+#include "config.h"
 #include "domain.h"
 #include "statistics.h"
 #include "arrays/ux1.h"
@@ -30,30 +32,31 @@ statistics_internal_t * restrict g_st_int = NULL;
  * @brief constructor - initialise and allocate internal buffers, schedule collection
  * @param[in] domain : information about domain decomposition and size
  * @param[in] time   : current time (hereafter in free-fall time units)
- * @param[in] rate   : collection rate
- * @param[in] after  : statistics are collected after this time
  */
-static void init(const domain_t *domain, const double time, const double rate, const double after){
+static int init(const domain_t *domain, const double time){
   g_st_int = common_calloc(1, sizeof(statistics_internal_t));
-  ARRAY_PREPARE(   ux1,    UX1);
-  ARRAY_PREPARE(   ux2,    UX2);
-  ARRAY_PREPARE(   uy1,    UY1);
-  ARRAY_PREPARE(   uy2,    UY2);
-  ARRAY_PREPARE(   uz1,    UZ1);
-  ARRAY_PREPARE(   uz2,    UZ2);
-  // find time to trigger next collection event
-  const double next = rate * ceil(
-      fmax(DBL_EPSILON, fmax(time, after)) / rate
+  ARRAY_PREPARE(ux1, UX1);
+  ARRAY_PREPARE(ux2, UX2);
+  ARRAY_PREPARE(uy1, UY1);
+  ARRAY_PREPARE(uy2, UY2);
+  ARRAY_PREPARE(uz1, UZ1);
+  ARRAY_PREPARE(uz2, UZ2);
+  double after = 0.;
+  if(0 != config.get_double("stat_rate", &g_st_int->rate)) return 1;
+  if(0 != config.get_double("stat_after",         &after)) return 1;
+  g_st_int->next = g_st_int->rate * ceil(
+      fmax(DBL_EPSILON, fmax(time, after)) / g_st_int->rate
   );
-  g_st_int->rate = rate;
-  g_st_int->next = next;
-  MPI_Comm comm_cart = MPI_COMM_NULL;
-  sdecomp.get_comm_cart(domain->info, &comm_cart);
+  // report
   int myrank = 0;
-  MPI_Comm_rank(comm_cart, &myrank);
+  sdecomp.get_comm_rank(domain->info, &myrank);
   if(0 == myrank){
-    printf("statistics initialised, next collect: % .3e\n", next);
+    printf("STATISTICS\n");
+    printf("\tnext: % .3e\n", g_st_int->next);
+    printf("\trate: % .3e\n", g_st_int->rate);
+    fflush(stdout);
   }
+  return 0;
 }
 
 /**

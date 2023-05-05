@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# name of directory in which initial conditions (incl. domain size etc.) are stored
-export dirname_ic=initial_conditions/output
-
 ## durations
 # maximum duration (in free-fall time)
 export timemax=5.0e+2
@@ -19,11 +16,6 @@ export stat_rate=1.0e-1
 # statistics collection after (in free-fall time)
 export stat_after=1.0e+2
 
-## treatment of diffusive terms
-export implicitx=true
-export implicity=false
-export implicitz=false
-
 ## safety factors to decide time step size
 ## for advective and diffusive terms
 export coef_dt_adv=0.95
@@ -32,4 +24,7 @@ export coef_dt_dif=0.95
 ## physical parameters
 export Re=80.
 
-mpirun -n 2 --oversubscribe ./a.out
+# name of directory in which initial conditions (incl. domain size etc.) are stored
+dirname_ic=initial_condition/output
+
+mpirun -n 2 --oversubscribe ./a.out ${dirname_ic}

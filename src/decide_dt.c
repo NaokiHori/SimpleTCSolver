@@ -1,6 +1,8 @@
+#include <stdbool.h>
 #include <math.h>
 #include <float.h>
 #include <mpi.h>
+#include "param.h"
 #include "array.h"
 #include "config.h"
 #include "sdecomp.h"
@@ -11,6 +13,11 @@
 #include "arrays/fluid/uy.h"
 #include "arrays/fluid/uz.h"
 #include "arrays/domain/dxc.h"
+
+// overriden later using environment variables
+static bool coefs_are_initialised = false;
+static double coef_dt_adv = 0.;
+static double coef_dt_dif = 0.;
 
 /**
  * @brief decide time step size restricted by the advective terms
@@ -25,6 +32,7 @@ static int decide_dt_adv(const domain_t * restrict domain, const fluid_t * restr
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
+  const double xmin = domain->xf[0];
   const double * restrict dxc = domain->dxc;
   const double dy = domain->dy;
   const double dz = domain->dz;
@@ -34,7 +42,7 @@ static int decide_dt_adv(const domain_t * restrict domain, const fluid_t * restr
   // sufficiently small number to avoid zero division
   const double small = 1.e-8;
   *dt = 1.; // max possible dt
-  // compute grid-size over velocity in x 
+  // compute grid-size over velocity in x
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 2; i <= isize; i++){
@@ -44,16 +52,16 @@ static int decide_dt_adv(const domain_t * restrict domain, const fluid_t * restr
       }
     }
   }
-  // compute grid-size over velocity in y 
+  // compute grid-size over velocity in y
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
         double vel = fabs(UY(i, j, k)) + small;
-        *dt = fmin(*dt, dy / vel);
+        *dt = fmin(*dt, xmin * dy / vel);
       }
     }
   }
-  // compute grid-size over velocity in z 
+  // compute grid-size over velocity in z
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -62,10 +70,9 @@ static int decide_dt_adv(const domain_t * restrict domain, const fluid_t * restr
       }
     }
   }
-  // unify result, multiply safety factor 
+  // unify result, multiply safety factor
   MPI_Allreduce(MPI_IN_PLACE, dt, 1, MPI_DOUBLE, MPI_MIN, comm_cart);
-  const double coef = config.get.coef_dt_adv();
-  *dt *= coef;
+  *dt *= coef_dt_adv;
   return 0;
 }
 
@@ -77,9 +84,10 @@ static int decide_dt_adv(const domain_t * restrict domain, const fluid_t * restr
  * @return            : error code
  */
 static int decide_dt_dif(const domain_t * restrict domain, const fluid_t * restrict fluid, double * restrict dt){
-  // take smaller diffusivity 
+  // take smaller diffusivity
   const double prefactor = 1. / fluid->diffusivity;
   const int isize = domain->mysizes[0];
+  const double xmin = domain->xf[0];
   const double * restrict dxc = domain->dxc;
   const double dy = domain->dy;
   const double dz = domain->dz;
@@ -90,12 +98,11 @@ static int decide_dt_dif(const domain_t * restrict domain, const fluid_t * restr
     const double dx = DXC(i  );
     grid_sizes[0] = fmin(grid_sizes[0], dx);
   }
-  grid_sizes[1] = dy;
+  grid_sizes[1] = xmin * dy;
   grid_sizes[2] = dz;
-  // compute diffusive constraints 
-  const double coef = config.get.coef_dt_dif();
+  // compute diffusive constraints
   for(int dim = 0; dim < NDIMS; dim++){
-    dt[dim] = coef * 0.5 / NDIMS * prefactor * pow(grid_sizes[dim], 2.);
+    dt[dim] = coef_dt_dif * 0.5 / NDIMS * prefactor * pow(grid_sizes[dim], 2.);
   }
   return 0;
 }
@@ -106,23 +113,28 @@ static int decide_dt_dif(const domain_t * restrict domain, const fluid_t * restr
  * @param[in] fluid  : velocity and diffusivity
  * @return           : time step size
  */
-double decide_dt(const domain_t * restrict domain, const fluid_t * restrict fluid){
-  // compute advective and diffusive constraints 
-  double dt_adv = 0.;
+int decide_dt(const domain_t * restrict domain, const fluid_t * restrict fluid, double * restrict dt){
+  if(!coefs_are_initialised){
+    if(0 != config.get_double("coef_dt_adv", &coef_dt_adv)) return 1;
+    if(0 != config.get_double("coef_dt_dif", &coef_dt_dif)) return 1;
+    coefs_are_initialised = true;
+  }
+  // compute advective and diffusive constraints
+  double dt_adv[1] = {0.};
   double dt_dif[NDIMS] = {0.};
-  decide_dt_adv(domain, fluid, &dt_adv);
-  decide_dt_dif(domain, fluid,  dt_dif);
-  // choose smallest value as dt 
-  double dt = dt_adv;
-  if(!config.get.implicitx()){
-    dt = fmin(dt, dt_dif[0]);
+  decide_dt_adv(domain, fluid, dt_adv);
+  decide_dt_dif(domain, fluid, dt_dif);
+  // choose smallest value as dt
+  *dt = dt_adv[0];
+  if(!param_implicit_x){
+    *dt = fmin(*dt, dt_dif[0]);
   }
-  if(!config.get.implicity()){
-    dt = fmin(dt, dt_dif[1]);
+  if(!param_implicit_y){
+    *dt = fmin(*dt, dt_dif[1]);
   }
-  if(!config.get.implicitz()){
-    dt = fmin(dt, dt_dif[2]);
+  if(!param_implicit_z){
+    *dt = fmin(*dt, dt_dif[2]);
   }
-  return dt;
+  return 0;
 }
 

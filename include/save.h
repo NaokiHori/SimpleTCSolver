@@ -1,34 +1,30 @@
-#if !defined(SAVE_H)
-#define SAVE_H
+#pragma once
 
 #include "domain.h"
 #include "fluid.h"
 
 typedef struct save_t_ {
   // constructor
-  void (*init)(
+  int (* const init)(
     const domain_t *domain,
-    const double time,
-    const double rate,
-    const double after
+    const double time
   );
   // destructor
-  void (*finalise)(
+  void (* const finalise)(
       void
   );
-  // save flow fields etc. to files
-  void (*output)(
-      const domain_t *domain,
+  // make space to save flow fields, save some scalars
+  int (* const prepare)(
+      const domain_t * restrict domain,
       const int step,
       const double time,
-      const fluid_t *fluid
+      char * restrict * dirname
   );
   // getter, next timing to call "output"
-  double (*get_next_time)(
+  double (* const get_next_time)(
       void
   );
 } save_t;
 
 extern const save_t save;
 
-#endif // SAVE_H

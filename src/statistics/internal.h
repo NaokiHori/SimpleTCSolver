@@ -1,7 +1,7 @@
 #if !defined(STATISTICS_INTERNAL_H)
 #define STATISTICS_INTERNAL_H
 
-// definition of statistics_internal_t 
+// definition of statistics_internal_t
 /**
  * @struct statistics_internal_t
  * @brief struct storing statistics-related variables
@@ -13,13 +13,11 @@
  */
 typedef struct {
   int num;
-  array_t * restrict ux1;
-  array_t * restrict ux2;
-  array_t * restrict uy1;
-  array_t * restrict uy2;
-  array_t * restrict uz1;
-  array_t * restrict uz2;
+  array_t * restrict ux1, * restrict ux2;
+  array_t * restrict uy1, * restrict uy2;
+  array_t * restrict uz1, * restrict uz2;
   double next, rate;
+  double diffusivity;
 } statistics_internal_t;
 
 extern statistics_internal_t * restrict g_st_int;

@@ -2,16 +2,16 @@
 Advective terms
 ###############
 
-I consider
+********
+Momentum
+********
 
 .. math::
 
-   u_j L_{ij},
-
-namely
-
-.. math::
-
+   &
+   u_j L_{ij}
+   = \\
+   &
    \left(
       \er \ur
       +
@@ -32,7 +32,7 @@ namely
       & + \left( \ez \otimes \ez \right) L_{\vz \vz}
    \end{pmatrix}.
 
-:math:`27` terms exist in total, and :math:`9` terms survive using
+Using
 
 .. math::
 
@@ -40,9 +40,13 @@ namely
    =
    \left( \underline{e}_i \cdot \underline{e}_j \right) \underline{e}_k
    =
-   \delta_{ij} \underline{e}_k.
+   \delta_{ij} \underline{e}_k,
 
-In conclusion, I obtain
+I have the following.
+
+======
+Radial
+======
 
 .. math::
 
@@ -51,8 +55,16 @@ In conclusion, I obtain
    \ut L_{\vr \vt}
    +
    \uz L_{\vr \vz}
+   =
+   \ur \left( \lrr \right)
+   +
+   \ut \left( \lrt \right)
+   +
+   \uz \left( \lrz \right).
 
-in the radial direction,
+=========
+Azimuthal
+=========
 
 .. math::
 
@@ -61,8 +73,16 @@ in the radial direction,
    \ut L_{\vt \vt}
    +
    \uz L_{\vt \vz}
+   =
+   \ur \left( \ltr \right)
+   +
+   \ut \left( \ltt \right)
+   +
+   \uz \left( \ltz \right).
 
-in the azimuthal direction, and
+=====
+Axial
+=====
 
 .. math::
 
@@ -71,32 +91,62 @@ in the azimuthal direction, and
    \ut L_{\vz \vt}
    +
    \uz L_{\vz \vz}
-
-in the axial direction.
-
-Explicitly, I have
-
-.. math::
-
-   \ur \left( \lrr \right)
-   +
-   \ut \left( \lrt \right)
-   +
-   \uz \left( \lrz \right),
-
-.. math::
-
-   \ur \left( \ltr \right)
-   +
-   \ut \left( \ltt \right)
-   +
-   \uz \left( \ltz \right),
-
-.. math::
-
+   =
    \ur \left( \lzr \right)
    +
    \ut \left( \lzt \right)
    +
    \uz \left( \lzz \right).
+
+******
+Energy
+******
+
+By taking the inner product of the velocity vector and the momentum equation, I have the following.
+
+======
+Radial
+======
+
+.. math::
+
+   \ur \der{\kr}{\vr}
+   +
+   \ut \frac{1}{\vr} \der{\kr}{\vt}
+   -
+   \frac{\ur \ut^2}{\vr}
+   +
+   \uz \der{\kr}{\vz},
+
+where :math:`\kr \equiv \ur^2 / 2`.
+
+=========
+Azimuthal
+=========
+
+.. math::
+
+   \ur \der{\kt}{\vr}
+   +
+   \ut \frac{1}{\vr} \der{\kt}{\vt}
+   +
+   \frac{\ur \ut^2}{\vr}
+   +
+   \uz \der{\kt}{\vz},
+
+where :math:`\kt \equiv \ut^2 / 2`.
+
+=====
+Axial
+=====
+
+.. math::
+
+   \ur \der{\kz}{\vr}
+   +
+   \ut \frac{1}{\vr} \der{\kz}{\vt}
+   +
+   \uz \der{\kz}{\vz},
+
+where :math:`\kz \equiv \uz^2 / 2`.
 

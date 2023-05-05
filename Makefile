@@ -48,10 +48,7 @@ datadel:
 	$(RM) -r $(OUTPUTDIR)/save/*
 	$(RM) -r $(OUTPUTDIR)/stat/*
 
-test_tdm:
-	$(CC) -DDEBUG_TEST_TDM $(CFLAGS) $(INCLUDES) src/common.c src/tdm.c -o test_tdm.out -lm
-
 -include $(DEPS)
 
-.PHONY : help all clean output datadel test_tdm
+.PHONY : help all clean output datadel
 

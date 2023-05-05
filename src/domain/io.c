@@ -13,11 +13,11 @@
  * @return             : error code
  */
 int domain_load(const char dirname[], domain_t *domain){
-  bool   *uniformx = &(domain->uniformx);
-  int    **glsizes = &(domain->glsizes);
-  double **lengths = &(domain->lengths);
-  double **xf      = &(domain->xf);
-  double **xc      = &(domain->xc);
+  bool   * restrict uniformx = &(domain->uniformx);
+  int    * restrict *glsizes = &(domain->glsizes);
+  double * restrict *lengths = &(domain->lengths);
+  double * restrict *xf      = &(domain->xf);
+  double * restrict *xc      = &(domain->xc);
   if(0 != fileio_r_serial(dirname, "uniformx", 0, NULL, NPY_BOL, sizeof(bool), uniformx)){
     return 1;
   }
@@ -69,6 +69,10 @@ int domain_load(const char dirname[], domain_t *domain){
  * @return            : error code
  */
 int domain_save(const char dirname[], const domain_t *domain){
+  int myrank = 0;
+  sdecomp.get_comm_rank(domain->info, &myrank);
+  // serial operation
+  if(0 != myrank) return 0;
   const bool   uniformx = domain->uniformx;
   const int    *glsizes = domain->glsizes;
   const double *lengths = domain->lengths;

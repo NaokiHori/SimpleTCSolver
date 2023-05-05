@@ -64,9 +64,9 @@ Here, how the governing equations are discretised is discussed.
    :maxdepth: 1
 
    adv-add
-   adv-r
-   adv-t
-   adv-z
+   adv-r/main
+   adv-t/main
+   adv-z/main
 
 .. toctree::
    :caption: Implementation - diffusive terms

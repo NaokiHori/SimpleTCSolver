@@ -1,4 +1,5 @@
 #include <mpi.h>
+#include "param.h"
 #include "domain.h"
 #include "sdecomp.h"
 #include "fluid.h"
@@ -21,7 +22,7 @@ static int communicate_in_y(const domain_t * restrict domain, double * restrict 
   const int nitems = 1;
   // same tag is fine since I use blocking communication
   const int tag = 0;
-  // define datatype in y 
+  // define datatype in y
   MPI_Datatype dtype = MPI_DOUBLE;
   MPI_Type_vector(ksize, isize, (isize+2) * (jsize+2), dtype, &dtype);
   MPI_Type_commit(&dtype);
@@ -54,7 +55,7 @@ static int communicate_in_z(const domain_t * restrict domain, double * restrict 
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
-  // define datatype in z 
+  // define datatype in z
   MPI_Datatype dtype = MPI_DOUBLE;
   MPI_Type_vector(jsize+2, isize, isize+2, MPI_DOUBLE, &dtype);
   MPI_Type_commit(&dtype);
@@ -84,11 +85,11 @@ static int assign_boundary_conditions_in_x(const domain_t * restrict domain, dou
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
-  // set boundary values 
+  // set boundary values
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
-      UZ(      0, j, k) = 0.; // no-slip
-      UZ(isize+1, j, k) = 0.; // no-slip
+      UZ(      0, j, k) = param_uz_xm; // no-slip
+      UZ(isize+1, j, k) = param_uz_xp; // no-slip
     }
   }
   return 0;

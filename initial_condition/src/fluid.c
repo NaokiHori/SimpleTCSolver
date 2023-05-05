@@ -128,6 +128,7 @@ static void init_and_save_p(const domain_t *domain){
 }
 
 void fluid_init(const domain_t * restrict domain){
+  srand(1 >> 8);
   init_and_save_ux(domain);
   init_and_save_uy(domain);
   init_and_save_uz(domain);

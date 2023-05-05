@@ -2,6 +2,7 @@
 # for 1D, x-face, x-center, and their distances are defined
 # for ND, arrays to hold velocity, pressure, temperature, etc. are defined
 
+import os
 import sys
 import re
 
@@ -194,6 +195,7 @@ def domain():
             "initial_conditions/include/arrays/domain",
     )
     for root in roots:
+        os.system(f"rm -f {root}/*.h")
         gen_1d(root, "xf",      0, +1)
         gen_1d(root, "xc",     +1, +1)
         gen_1d(root, "dxf",     0,  0)
@@ -216,6 +218,7 @@ def fluid():
     # no  halo cells for the latter
     nadds = (+1, 0)
     for n, root in enumerate(roots):
+        os.system(f"rm -f {root}/*.h")
         gen_3d(root, "ux",  0, +1, nadds[n], nadds[n], nadds[n], nadds[n])
         gen_3d(root, "uy", +1, +1, nadds[n], nadds[n], nadds[n], nadds[n])
         gen_3d(root, "uz", +1, +1, nadds[n], nadds[n], nadds[n], nadds[n])
@@ -223,6 +226,7 @@ def fluid():
 
 def fluid_internal():
     root = "src/fluid/arrays"
+    os.system(f"rm -f {root}/*.h")
     gen_3d(root, "psi",    +1, +1, +1, +1, +1, +1)
     gen_3d(root, "srcuxa", -1,  0,  0,  0,  0,  0)
     gen_3d(root, "srcuxb", -1,  0,  0,  0,  0,  0)
@@ -236,6 +240,7 @@ def fluid_internal():
 
 def statistics():
     root = "src/statistics/arrays"
+    os.system(f"rm -f {root}/*.h")
     gen_3d(root, "ux1",  0, +1, 0, 0, 0, 0)
     gen_3d(root, "ux2",  0, +1, 0, 0, 0, 0)
     gen_3d(root, "uy1", +1, +1, 0, 0, 0, 0)

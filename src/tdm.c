@@ -95,7 +95,7 @@ GTSV(fftw_complex)
 TDM_SOLVE(double)
 TDM_SOLVE(fftw_complex)
 
-// definition of tdm_info_t_ 
+// definition of tdm_info_t_
 /**
  * @struct tdm_info_t_
  * @brief struct to keep information about tri-diagonal system and internal buffers
@@ -268,6 +268,7 @@ static int destruct(tdm_info_t * restrict info){
   common_free(info->u);
   common_free(info->v);
   common_free(info->q1);
+  common_free(info);
   return 0;
 }
 

@@ -1,15 +1,13 @@
-#if !defined(LOGGING_H)
-#define LOGGING_H
+#pragma once
 
 #include "domain.h"
 #include "fluid.h"
 
 typedef struct {
   // constructor
-  void (* const init)(
+  int (* const init)(
       const domain_t *domain,
-      const double time,
-      const double rate
+      const double time
   );
   // destructor
   void (* const finalise)(
@@ -32,4 +30,3 @@ typedef struct {
 
 extern const logging_t logging;
 
-#endif // LOGGING_H

@@ -10,7 +10,7 @@ typedef struct{
   double u;
 } laplacian_t;
 
-// definition of a structure domain_t 
+// definition of a structure domain_t
 /**
  * @struct domain_t
  * @brief struct storing parameters relevant to spatial domain
@@ -26,26 +26,26 @@ typedef struct{
  * @var lap      : Laplace operator in each direction for each scalar
  */
 typedef struct {
-  sdecomp_info_t *info;
-  int *glsizes;
-  int *mysizes;
-  int *offsets;
-  double *lengths;
-  double *xf, *xc;
-  double *dxf, *dxc;
+  sdecomp_info_t * restrict info;
+  int * restrict glsizes;
+  int * restrict mysizes;
+  int * restrict offsets;
+  double * restrict lengths;
+  double * restrict  xf, * restrict  xc;
+  double * restrict dxf, * restrict dxc;
   double dy;
   double dz;
   bool uniformx;
-  laplacian_t *uxlapx, *uylapx, *uzlapx, *plapx;
-  laplacian_t *uxlapy, *uylapy, *uzlapy, *plapy;
+  laplacian_t * restrict uxlapx, * restrict uylapx, * restrict uzlapx, * restrict plapx;
+  laplacian_t * restrict uxlapy, * restrict uylapy, * restrict uzlapy, * restrict plapy;
   laplacian_t lapz;
 } domain_t;
 
 // constructor and destructor
-extern domain_t *domain_init(const char dirname_ic[]);
-extern int domain_finalise(domain_t *domain);
+extern int domain_init(const char dirname_ic[restrict], domain_t * restrict * domain);
+extern int domain_finalise(domain_t * restrict domain);
 
 // save members which are necessary to restart
-extern int domain_save(const char dirname[], const domain_t *domain);
+extern int domain_save(const char dirname[restrict], const domain_t * restrict domain);
 
 #endif // DOMAIN_H

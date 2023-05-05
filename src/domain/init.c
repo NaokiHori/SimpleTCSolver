@@ -1,3 +1,4 @@
+#include <math.h>
 #include <mpi.h>
 #include "common.h"
 #include "domain.h"
@@ -184,23 +185,21 @@ static int compute_laplacian(domain_t *domain){
  * @param[in] dirname_ic : name of directory in which initial conditions are stored
  * @return               : structure being allocated and initalised
  */
-domain_t *domain_init(const char dirname_ic[]){
-  domain_t *domain      = common_calloc(1, sizeof(domain_t));
-  int    **glsizes      = &(domain->glsizes);
-  int    **mysizes      = &(domain->mysizes);
-  int    **offsets      = &(domain->offsets);
-  double **lengths      = &(domain->lengths);
-  sdecomp_info_t **info = &(domain->info);
-  double **xf           = &(domain->xf);
-  double **xc           = &(domain->xc);
-  double **dxf          = &(domain->dxf);
-  double **dxc          = &(domain->dxc);
-  double *dy            = &(domain->dy);
-  double *dz            = &(domain->dz);
+int domain_init(const char dirname_ic[restrict], domain_t * restrict *domain){
+  *domain               = common_calloc(1, sizeof(domain_t));
+  int            * restrict *glsizes = &((*domain)->glsizes);
+  int            * restrict *mysizes = &((*domain)->mysizes);
+  int            * restrict *offsets = &((*domain)->offsets);
+  double         * restrict *lengths = &((*domain)->lengths);
+  sdecomp_info_t * restrict *info    = &((*domain)->info);
+  double * restrict *xf  = &((*domain)->xf);
+  double * restrict *xc  = &((*domain)->xc);
+  double * restrict *dxf = &((*domain)->dxf);
+  double * restrict *dxc = &((*domain)->dxc);
+  double * restrict dy   = &((*domain)->dy);
+  double * restrict dz   = &((*domain)->dz);
   // load spatial information
-  if(0 != domain_load(dirname_ic, domain)){
-    return NULL;
-  }
+  if(0 != domain_load(dirname_ic, *domain)) return 1;
   // compute grid sizes
   // allocate and initialise x coordinates
   *dxf = allocate_and_init_dxf((*glsizes)[0], *xf);
@@ -209,9 +208,9 @@ domain_t *domain_init(const char dirname_ic[]){
   *dy = (*lengths)[1] / (*glsizes)[1];
   *dz = (*lengths)[2] / (*glsizes)[2];
   // compute discrete Laplace operators
-  compute_laplacian(domain);
+  compute_laplacian(*domain);
   // initialise sdecomp to distribute the domain
-  *info = optimise_sdecomp_init(domain->uniformx, *glsizes);
+  *info = optimise_sdecomp_init((*domain)->uniformx, *glsizes);
   // local array sizes and offsets
   *mysizes = common_calloc(NDIMS, sizeof(int));
   *offsets = common_calloc(NDIMS, sizeof(int));
@@ -223,6 +222,6 @@ domain_t *domain_init(const char dirname_ic[]){
     (*mysizes)[dim] = (int)mysize;
     (*offsets)[dim] = (int)offset;
   }
-  return domain;
+  return 0;
 }
 

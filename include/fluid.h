@@ -5,7 +5,7 @@
 #include "domain.h"
 #include "structure.h"
 
-// definition of a structure fluid_t_ 
+// definition of a structure fluid_t_
 /**
  * @struct fluid_t_ (or fluid_t)
  * @brief struct storing fluid-related variables
@@ -22,20 +22,14 @@ struct fluid_t_ {
   array_t * restrict uz;
   array_t * restrict p;
   array_t * restrict psi;
-  array_t * restrict srcuxa;
-  array_t * restrict srcuxb;
-  array_t * restrict srcuxg;
-  array_t * restrict srcuya;
-  array_t * restrict srcuyb;
-  array_t * restrict srcuyg;
-  array_t * restrict srcuza;
-  array_t * restrict srcuzb;
-  array_t * restrict srcuzg;
+  array_t * restrict srcuxa, * restrict srcuxb, * restrict srcuxg;
+  array_t * restrict srcuya, * restrict srcuyb, * restrict srcuyg;
+  array_t * restrict srcuza, * restrict srcuzb, * restrict srcuzg;
   double diffusivity;
 };
 
 // constructor and destructor
-extern fluid_t *fluid_init(const char dirname_ic[], const domain_t * restrict domain);
+extern int fluid_init(const char dirname_ic[restrict], const domain_t * restrict domain, fluid_t * restrict * fluid);
 extern int fluid_finalise(fluid_t * restrict fluid);
 
 // compute right-hand-side of Runge-Kutta scheme
@@ -58,5 +52,8 @@ extern int fluid_update_boundaries_ux(const domain_t * restrict domain, double *
 extern int fluid_update_boundaries_uy(const domain_t * restrict domain, double * restrict uy);
 extern int fluid_update_boundaries_uz(const domain_t * restrict domain, double * restrict uz);
 extern int fluid_update_boundaries_p (const domain_t * restrict domain, double * restrict  p);
+
+// save flow field
+extern int fluid_save(const char dirname[], const domain_t * restrict domain, const fluid_t * restrict fluid);
 
 #endif // FLUID_H

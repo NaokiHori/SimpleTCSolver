@@ -1,12 +1,12 @@
 #include <string.h>
-#include "config.h"
+#include "param.h"
 #include "domain.h"
 #include "fluid.h"
 #include "internal.h"
-#include "arrays/domain/dxf.h"
-#include "arrays/domain/dxc.h"
 #include "arrays/domain/xf.h"
 #include "arrays/domain/xc.h"
+#include "arrays/domain/dxf.h"
+#include "arrays/domain/dxc.h"
 #include "arrays/domain/uzlapx.h"
 #include "arrays/domain/uzlapy.h"
 #include "arrays/fluid/ux.h"
@@ -24,23 +24,24 @@ static inline int advection_x(const domain_t * restrict domain, double * restric
   const double * restrict dxf = domain->dxf;
   const double * restrict xf  = domain->xf;
   const double * restrict xc  = domain->xc;
-  const double            dy  = domain->dy;
-  const double            dz  = domain->dz;
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
-        // uz is transported by ux | 11
-        // J = r dr dt dz
-        const double jd = XC(i  ) * DXF(i  ) * dy * dz;
-        const double cux_xm = 0.5 * XF(i  ) * dy * dz * UX(i  , j  , k-1)
-                            + 0.5 * XF(i  ) * dy * dz * UX(i  , j  , k  );
-        const double cux_xp = 0.5 * XF(i+1) * dy * dz * UX(i+1, j  , k-1)
-                            + 0.5 * XF(i+1) * dy * dz * UX(i+1, j  , k  );
-        const double duz_xm = - UZ(i-1, j  , k  ) + UZ(i  , j  , k  );
-        const double duz_xp = - UZ(i  , j  , k  ) + UZ(i+1, j  , k  );
+        // uz is transported by ux | 14
+        const double pfactor = 0.5 / XC(i  ) / DXF(i  );
+        const double l = + pfactor * (
+            + 0.5 * XF(i  ) * UX(i  , j  , k-1)
+            + 0.5 * XF(i  ) * UX(i  , j  , k  )
+        );
+        const double u = - pfactor * (
+            + 0.5 * XF(i+1) * UX(i+1, j  , k-1)
+            + 0.5 * XF(i+1) * UX(i+1, j  , k  )
+        );
+        const double c = - l - u;
         SRCUZA(i, j, k) +=
-          - 1. / jd * 0.5 * cux_xm * duz_xm
-          - 1. / jd * 0.5 * cux_xp * duz_xp;
+          + l * UZ(i-1, j  , k  )
+          + c * UZ(i  , j  , k  )
+          + u * UZ(i+1, j  , k  );
       }
     }
   }
@@ -51,25 +52,26 @@ static inline int advection_y(const domain_t * restrict domain, double * restric
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
-  const double * restrict dxf = domain->dxf;
-  const double * restrict xc  = domain->xc;
-  const double            dy  = domain->dy;
-  const double            dz  = domain->dz;
+  const double * restrict xc = domain->xc;
+  const double            dy = domain->dy;
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
-        // uz is transported by uy | 11
-        // J = r dr dt dz
-        const double jd = XC(i  ) * DXF(i  ) * dy * dz;
-        const double cuy_ym = 0.5 * DXF(i  ) * dz * UY(i  , j  , k-1)
-                            + 0.5 * DXF(i  ) * dz * UY(i  , j  , k  );
-        const double cuy_yp = 0.5 * DXF(i  ) * dz * UY(i  , j+1, k-1)
-                            + 0.5 * DXF(i  ) * dz * UY(i  , j+1, k  );
-        const double duz_ym = - UZ(i  , j-1, k  ) + UZ(i  , j  , k  );
-        const double duz_yp = - UZ(i  , j  , k  ) + UZ(i  , j+1, k  );
+        // uz is transported by uy | 14
+        const double pfactor = 0.5 / XC(i  ) / dy;
+        const double l = + pfactor * (
+            + 0.5 * UY(i  , j  , k-1)
+            + 0.5 * UY(i  , j  , k  )
+        );
+        const double u = - pfactor * (
+            + 0.5 * UY(i  , j+1, k-1)
+            + 0.5 * UY(i  , j+1, k  )
+        );
+        const double c = - l - u;
         SRCUZA(i, j, k) +=
-          - 1. / jd * 0.5 * cuy_ym * duz_ym
-          - 1. / jd * 0.5 * cuy_yp * duz_yp;
+          + l * UZ(i  , j-1, k  )
+          + c * UZ(i  , j  , k  )
+          + u * UZ(i  , j+1, k  );
       }
     }
   }
@@ -80,25 +82,25 @@ static inline int advection_z(const domain_t * restrict domain, double * restric
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
-  const double * restrict dxf = domain->dxf;
-  const double * restrict xc  = domain->xc;
-  const double            dy  = domain->dy;
-  const double            dz  = domain->dz;
+  const double dz = domain->dz;
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
-        // uz is transported by uz | 11
-        // J = r dr dt dz
-        const double jd = XC(i  ) * DXF(i  ) * dy * dz;
-        const double cuz_zm = 0.5 * XC(i  ) * DXF(i  ) * dy * UZ(i  , j  , k-1)
-                            + 0.5 * XC(i  ) * DXF(i  ) * dy * UZ(i  , j  , k  );
-        const double cuz_zp = 0.5 * XC(i  ) * DXF(i  ) * dy * UZ(i  , j  , k  )
-                            + 0.5 * XC(i  ) * DXF(i  ) * dy * UZ(i  , j  , k+1);
-        const double duz_zm = - UZ(i  , j  , k-1) + UZ(i  , j  , k  );
-        const double duz_zp = - UZ(i  , j  , k  ) + UZ(i  , j  , k+1);
+        // uz is transported by uz | 14
+        const double pfactor = 0.5 / dz;
+        const double l = + pfactor * (
+            + 0.5 * UZ(i  , j  , k-1)
+            + 0.5 * UZ(i  , j  , k  )
+        );
+        const double u = - pfactor * (
+            + 0.5 * UZ(i  , j  , k  )
+            + 0.5 * UZ(i  , j  , k+1)
+        );
+        const double c = - l - u;
         SRCUZA(i, j, k) +=
-          - 1. / jd * 0.5 * cuz_zm * duz_zm
-          - 1. / jd * 0.5 * cuz_zp * duz_zp;
+          + l * UZ(i  , j  , k-1)
+          + c * UZ(i  , j  , k  )
+          + u * UZ(i  , j  , k+1);
       }
     }
   }
@@ -191,9 +193,6 @@ static int pressure(const domain_t * restrict domain, double * restrict srcuzg, 
  * @return               : error code
  */
 int fluid_compute_rhs_uz(const domain_t * restrict domain, const int rkstep, fluid_t * restrict fluid){
-  const int implicitx = config.get.implicitx();
-  const int implicity = config.get.implicity();
-  const int implicitz = config.get.implicitz();
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
@@ -216,9 +215,9 @@ int fluid_compute_rhs_uz(const domain_t * restrict domain, const int rkstep, flu
   advection_y(domain, srcuza, uz, uy);
   advection_z(domain, srcuza, uz    );
   // diffusive contributions, can be explicit or implicit
-  diffusion_x(domain, implicitx ? srcuzg : srcuza, diffusivity, uz);
-  diffusion_y(domain, implicity ? srcuzg : srcuza, diffusivity, uz);
-  diffusion_z(domain, implicitz ? srcuzg : srcuza, diffusivity, uz);
+  diffusion_x(domain, param_implicit_x ? srcuzg : srcuza, diffusivity, uz);
+  diffusion_y(domain, param_implicit_y ? srcuzg : srcuza, diffusivity, uz);
+  diffusion_z(domain, param_implicit_z ? srcuzg : srcuza, diffusivity, uz);
   // pressure-gradient contribution, always implicit
   pressure(domain, srcuzg, p);
   return 0;

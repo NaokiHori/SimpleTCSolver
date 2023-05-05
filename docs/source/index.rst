@@ -6,9 +6,9 @@ SimpleTCSolver
    :width: 800
 
 .. toctree::
-   :maxdepth: 1
+   :hidden:
 
-   derivation/main
+   equation/main
    implementation/main
    example/main
    references

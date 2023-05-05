@@ -4,20 +4,6 @@
 #define NDIMS 3
 
 #include <stdlib.h> // size_t
-#include <math.h>
-// C99 does not specify M_PI in math.h
-#if !defined(M_PI)
-#define M_PI 3.1415926535897932
-#endif
-
-// Runge-Kutta configurations 
-#define RKSTEPMAX 3
-typedef struct {
-  double alpha;
-  double beta;
-  double gamma;
-} rkcoef_t;
-extern const rkcoef_t RKCOEFS[RKSTEPMAX];
 
 extern void *common_calloc(const size_t count, const size_t size);
 extern void common_free(void *ptr);

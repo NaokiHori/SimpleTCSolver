@@ -1,6 +1,6 @@
+#include "param.h"
 #include "sdecomp.h"
 #include "common.h"
-#include "config.h"
 #include "domain.h"
 #include "fluid.h"
 #include "linear_system.h"
@@ -15,9 +15,9 @@
 static linear_system_t * restrict linear_system = NULL;
 
 static int compute_delta(const domain_t * restrict domain, const int rkstep, const double dt, fluid_t * restrict fluid){
-  const double alpha = RKCOEFS[rkstep].alpha;
-  const double beta  = RKCOEFS[rkstep].beta;
-  const double gamma = RKCOEFS[rkstep].gamma;
+  const double alpha = param_rkcoefs[rkstep].alpha;
+  const double beta  = param_rkcoefs[rkstep].beta;
+  const double gamma = param_rkcoefs[rkstep].gamma;
   const double adt = alpha * dt;
   const double bdt = beta  * dt;
   const double gdt = gamma * dt;
@@ -50,8 +50,11 @@ static int solve_in_x(const domain_t * restrict domain, const double prefactor){
   tdm.get_c(tdm_info, &tdm_c);
   tdm.get_u(tdm_info, &tdm_u);
   const laplacian_t * restrict uxlapx = domain->uxlapx;
+  // NOTE: this "isize" is the size of linear systems
+  //   and is different from "isize" used to describe the domain size
+  //   In particular this "isize" is one smaller than the normal "isize"
   const int isize = linear_system->x1pncl_mysizes[0];
-  for(int i = 2; i <= isize; i++){
+  for(int i = 2; i <= isize + 1; i++){
     tdm_l[i-2] =    - prefactor * UXLAPX(i).l;
     tdm_c[i-2] = 1. - prefactor * UXLAPX(i).c;
     tdm_u[i-2] =    - prefactor * UXLAPX(i).u;
@@ -72,7 +75,7 @@ static int solve_in_y(const domain_t * restrict domain, const double prefactor){
   const int isize = linear_system->y1pncl_mysizes[0];
   const int jsize = linear_system->y1pncl_mysizes[1];
   const int ioffs = linear_system->y1pncl_offsets[0];
-  for(int i = ioffs + 2; i <= isize + ioffs; i++){
+  for(int i = 2 + ioffs; i <= isize + 1 + ioffs; i++){
     for(int j = 0; j < jsize; j++){
       tdm_l[j] =    - prefactor * UXLAPY(i).l;
       tdm_c[j] = 1. - prefactor * UXLAPY(i).c;
@@ -130,9 +133,9 @@ static int update_field(const domain_t * restrict domain, fluid_t * restrict flu
 int fluid_update_velocity_ux(const domain_t * restrict domain, const int rkstep, const double dt, fluid_t * restrict fluid){
   if(linear_system == NULL){
     const size_t glsizes[NDIMS] = {
-      (size_t)(domain->glsizes[0]-1),
-      (size_t)(domain->glsizes[1]  ),
-      (size_t)(domain->glsizes[2]  ),
+      (size_t)(domain->glsizes[0] - 1),
+      (size_t)(domain->glsizes[1]    ),
+      (size_t)(domain->glsizes[2]    ),
     };
     linear_system = init_linear_system(domain->info, glsizes);
   }
@@ -140,11 +143,11 @@ int fluid_update_velocity_ux(const domain_t * restrict domain, const int rkstep,
   compute_delta(domain, rkstep, dt, fluid);
   // gamma dt diffusivity / 2
   const double prefactor =
-    0.5 * RKCOEFS[rkstep].gamma * dt * fluid->diffusivity;
-  if(config.get.implicitx()){
+    0.5 * param_rkcoefs[rkstep].gamma * dt * fluid->diffusivity;
+  if(param_implicit_x){
     solve_in_x(domain, prefactor);
   }
-  if(config.get.implicity()){
+  if(param_implicit_y){
     sdecomp.transpose.execute(
         linear_system->transposer_x1_to_y1,
         linear_system->x1pncl,
@@ -157,7 +160,7 @@ int fluid_update_velocity_ux(const domain_t * restrict domain, const int rkstep,
         linear_system->x1pncl
     );
   }
-  if(config.get.implicitz()){
+  if(param_implicit_z){
     sdecomp.transpose.execute(
         linear_system->transposer_x1_to_z2,
         linear_system->x1pncl,

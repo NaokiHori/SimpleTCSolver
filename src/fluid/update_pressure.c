@@ -1,4 +1,4 @@
-#include "config.h"
+#include "param.h"
 #include "common.h"
 #include "domain.h"
 #include "fluid.h"
@@ -18,7 +18,7 @@ static inline int add_explicit(const domain_t * restrict domain, const fluid_t *
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
-        // explicit contribution 
+        // explicit contribution
         P(i, j, k) += PSI(i, j, k);
       }
     }
@@ -36,7 +36,7 @@ static inline int add_implicit_x(const domain_t * restrict domain, const double 
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
-        // x implicit contribution 
+        // x implicit contribution
         P(i, j, k) -= prefactor * (
             + PLAPX(i  ).l * PSI(i-1, j  , k  )
             + PLAPX(i  ).c * PSI(i  , j  , k  )
@@ -58,7 +58,7 @@ static inline int add_implicit_y(const domain_t * restrict domain, const double 
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
-        // y implicit contribution 
+        // y implicit contribution
         P(i, j, k) -= prefactor * (
             + PLAPY(i  ).l * PSI(i  , j-1, k  )
             + PLAPY(i  ).c * PSI(i  , j  , k  )
@@ -80,7 +80,7 @@ static inline int add_implicit_z(const domain_t * restrict domain, const double 
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
-        // z implicit contribution 
+        // z implicit contribution
         P(i, j, k) -= prefactor * (
             + plapz.l * PSI(i  , j  , k-1)
             + plapz.c * PSI(i  , j  , k  )
@@ -103,21 +103,21 @@ static inline int add_implicit_z(const domain_t * restrict domain, const double 
 int fluid_update_pressure(const domain_t * restrict domain, const int rkstep, const double dt, fluid_t * restrict fluid){
   // explicit contribution, always present
   add_explicit(domain, fluid);
-  // gamma dt diffusivity / 2 
+  // gamma dt diffusivity / 2
   const double prefactor =
-    0.5 * RKCOEFS[rkstep].gamma * dt * fluid->diffusivity;
+    0.5 * param_rkcoefs[rkstep].gamma * dt * fluid->diffusivity;
   // additional corrections if diffusive terms
   //   in the direction is treated implicitly
-  if(config.get.implicitx()){
+  if(param_implicit_x){
     add_implicit_x(domain, prefactor, fluid);
   }
-  if(config.get.implicity()){
+  if(param_implicit_y){
     add_implicit_y(domain, prefactor, fluid);
   }
-  if(config.get.implicitz()){
+  if(param_implicit_z){
     add_implicit_z(domain, prefactor, fluid);
   }
-  // impose boundary conditions and communicate halo cells 
+  // impose boundary conditions and communicate halo cells
   fluid_update_boundaries_p(domain, fluid->p->data);
   return 0;
 }
