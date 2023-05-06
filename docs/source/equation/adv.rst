@@ -6,6 +6,10 @@ Advective terms
 Momentum
 ********
 
+=============
+Gradient form
+=============
+
 .. math::
 
    &
@@ -42,11 +46,9 @@ Using
    =
    \delta_{ij} \underline{e}_k,
 
-I have the following.
+I have the following relations.
 
-======
-Radial
-======
+Radial:
 
 .. math::
 
@@ -56,15 +58,13 @@ Radial
    +
    \uz L_{\vr \vz}
    =
-   \ur \left( \lrr \right)
+   \ur \lrr
    +
    \ut \left( \lrt \right)
    +
-   \uz \left( \lrz \right).
+   \uz \lrz.
 
-=========
-Azimuthal
-=========
+Azimuthal:
 
 .. math::
 
@@ -74,15 +74,13 @@ Azimuthal
    +
    \uz L_{\vt \vz}
    =
-   \ur \left( \ltr \right)
+   \ur \ltr
    +
    \ut \left( \ltt \right)
    +
-   \uz \left( \ltz \right).
+   \uz \ltz.
 
-=====
-Axial
-=====
+Axial:
 
 .. math::
 
@@ -92,21 +90,75 @@ Axial
    +
    \uz L_{\vz \vz}
    =
-   \ur \left( \lzr \right)
+   \ur \lzr
    +
-   \ut \left( \lzt \right)
+   \ut \lzt
    +
-   \uz \left( \lzz \right).
+   \uz \lzz.
+
+===============
+Divergence form
+===============
+
+Since
+
+.. math::
+
+   \der{u_j u_i}{x_j}
+   =
+   u_j \der{u_i}{x_j}
+   +
+   u_i \der{u_j}{x_j}
+
+using the incompressibility, I have the following relations.
+
+Radial:
+
+.. math::
+
+   \frac{1}{\vr}
+   \der{\vr \ur \ur}{\vr}
+   +
+   \frac{1}{\vr}
+   \der{\ut \ur}{\vt}
+   +
+   \der{\uz \ur}{\vz}
+   -
+   \frac{\ut \ut}{\vr}.
+
+Azimuthal:
+
+.. math::
+
+   \frac{1}{\vr}
+   \der{\vr \ur \ut}{\vr}
+   +
+   \frac{1}{\vr}
+   \der{\ut \ut}{\vt}
+   +
+   \der{\uz \ut}{\vz}
+   +
+   \frac{\ut \ur}{\vr}.
+
+Axial:
+
+.. math::
+
+   \frac{1}{\vr}
+   \der{\vr \ur \uz}{\vr}
+   +
+   \frac{1}{\vr}
+   \der{\ut \uz}{\vt}
+   +
+   \der{\uz \uz}{\vz}.
 
 ******
 Energy
 ******
 
-By taking the inner product of the velocity vector and the momentum equation, I have the following.
+By taking the inner product of the velocity vector and the momentum equation, I have the following relations.
 
-======
-Radial
-======
+Radial:
 
 .. math::
 
@@ -120,9 +172,7 @@ Radial
 
 where :math:`\kr \equiv \ur^2 / 2`.
 
-=========
-Azimuthal
-=========
+Azimuthal:
 
 .. math::
 
@@ -136,9 +186,7 @@ Azimuthal
 
 where :math:`\kt \equiv \ut^2 / 2`.
 
-=====
-Axial
-=====
+Axial:
 
 .. math::
 

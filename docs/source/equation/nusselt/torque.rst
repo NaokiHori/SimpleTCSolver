@@ -2,13 +2,15 @@
 Torque
 ######
 
-I consider to integrate the momentum equation in the azimuthal direction after :math:`r` is multiplied.
+I consider to integrate the momentum equation in the azimuthal direction in the whole volume after :math:`r` is multiplied.
 
-Advective terms are dropped for simplicity, and the diffusive terms yield
+Advective terms are dropped, since they vanish because of the impermeable and the periodic boundary conditions.
+
+The diffusive terms yield
 
 .. math::
 
-   \int \int
+   \int \int \int
    \mu
    \left\{
       \der{}{\vr} \left(
@@ -18,12 +20,16 @@ Advective terms are dropped for simplicity, and the diffusive terms yield
       \der{}{\vt} \left(
          \frac{1}{\vr} \der{\ut}{\vt}
       \right)
+      +
+      \der{}{\vz} \left(
+         \der{\ut}{\vz}
+      \right)
       -
       \frac{\ut}{\vr}
       +
       2 \left( \frac{1}{\vr} \der{\ur}{\vt} \right)
    \right\}
-   \vr d\vr d\vt.
+   \vr d\vr d\vt d\vz.
 
 Since
 
@@ -47,17 +53,17 @@ the above equation results in
 .. math::
 
    \left[
-      \int
+      \int \int
       \vr
       \mu
       \vr \der{}{\vr} \left(
          \frac{\ut}{\vr}
       \right)
-      \vr d\vt
+      \vr d\vt d\vz
    \right]_{r_i}^{r_o}
    =
    \left[
-      \int
+      \int \int
       \vr
       \times
       \mu
@@ -67,7 +73,7 @@ the above equation results in
          \frac{\ut}{\vr}
       \right)
       \times
-      \vr d\vt
+      \vr d\vt d\vz
    \right]_{r_i}^{r_o},
 
 which is equal to zero in a statistical sense, indicating that the torque evaluated on the inner and the outer cylinder walls match.
@@ -95,7 +101,7 @@ Finally I notice the torque measured on the inner and the outer cylinders are gi
    \equiv
    -
    \left[
-      \int
+      \int \int
       \vr
       \times
       \mu
@@ -105,7 +111,7 @@ Finally I notice the torque measured on the inner and the outer cylinders are gi
          \frac{\ut}{\vr}
       \right)
       \times
-      \vr d\vt
+      \vr d\vt d\vz
    \right]_{r = r_i}
    =
    -
@@ -127,7 +133,7 @@ and
    \equiv
    -
    \left[
-      \int
+      \int \int
       \vr
       \times
       \mu
@@ -137,7 +143,7 @@ and
          \frac{\ut}{\vr}
       \right)
       \times
-      \vr d\vt
+      \vr d\vt d\vz
    \right]_{r = r_o}
    =
    -
@@ -219,7 +225,7 @@ As a result, the laminar value :math:`T_{lam}` is
    \frac{2A}{\vr_o}
    dS_o
    =
-   2 \mu A \int_{\vt} d\vt.
+   2 \mu A \int \int d\vt d\vz.
 
 Thus the Nusselt number, which is defined as the torque normalised by the laminar value, is
 
@@ -230,4 +236,14 @@ Thus the Nusselt number, which is defined as the torque normalised by the lamina
    T \left( r_i \right)
    \equiv
    T \left( r_o \right).
+
+.. note::
+
+   :math:`Nu` is undefined when
+
+   .. math::
+
+      \frac{\ut_i}{\vr_i}
+      =
+      \frac{\ut_o}{\vr_o}.
 

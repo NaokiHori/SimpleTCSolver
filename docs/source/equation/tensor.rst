@@ -217,7 +217,7 @@ Radial
    \frac{T_{\vt \vt}}{\vr}
    =
    \frac{1}{\vr}
-   \der{\left( \vr T_{\vr \vr} \right)}{\vr}
+   \der{\vr T_{\vr \vr}}{\vr}
    +
    \frac{1}{\vr}
    \der{T_{\vr \vt}}{\vt}
@@ -244,7 +244,7 @@ Azimuthal
    \frac{T_{\vt \vr}}{\vr}
    =
    \frac{1}{\vr}
-   \der{\left( \vr T_{\vt \vr} \right)}{\vr}
+   \der{\vr T_{\vt \vr}}{\vr}
    +
    \frac{1}{\vr}
    \der{T_{\vt \vt}}{\vt}
@@ -269,7 +269,7 @@ Axial
    \frac{T_{\vz \vr}}{\vr}
    =
    \frac{1}{\vr}
-   \der{\left( \vr T_{\vz \vr} \right)}{\vr}
+   \der{\vr T_{\vz \vr}}{\vr}
    +
    \frac{1}{\vr}
    \der{T_{\vz \vt}}{\vt}

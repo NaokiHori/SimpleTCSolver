@@ -7,12 +7,12 @@ I consider to integrate the equation of the kinetic energy in the whole volume, 
 .. math::
 
    \left[
-      \int_{\vt}
+      \int \int
       \mu
       \left(
          \ut \vr \der{\ut}{\vr}
       \right)
-      d\vt
+      d\vt d\vz
    \right]_{r_i}^{r_o}
    =
    \int_V
@@ -26,12 +26,7 @@ in a statistical sense, where
    \epsilon
    \equiv
    \mu
-   \left(
-        L_{\vr \vr}^2
-      + L_{\vr \vt}^2
-      + L_{\vt \vr}^2
-      + L_{\vt \vt}^2
-   \right).
+   L_{ij} L_{ij}.
 
 The left-hand-side term leads to
 
@@ -147,7 +142,17 @@ Subtracting the second equation from the first one results in
       -
       \ut_o^2
    \right)
-   \int d\vt,
+   \int \int d\vt d\vz,
 
 which is the description of the Nusselt number based on the energy dissipation.
+
+.. note::
+
+   :math:`Nu` is undefined when
+
+   .. math::
+
+      \frac{\ut_i}{\vr_i}
+      =
+      \frac{\ut_o}{\vr_o}.
 
