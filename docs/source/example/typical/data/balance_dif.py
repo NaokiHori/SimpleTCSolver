@@ -8,7 +8,8 @@ def load(fname):
     data = np.loadtxt(fname)
     x = data[:, 0]
     y = data[:, 1]
-    return x, y
+    z = data[:, 2]
+    return x, y, z
 
 def normalise(config, values):
     return values / factor
@@ -18,12 +19,14 @@ if __name__ == "__main__":
     assert 4 == len(argv)
     ifnames = [argv[1], argv[2]]
     ofname = argv[3]
-    x0, y0 = load(ifnames[0])
-    x1, y1 = load(ifnames[1])
+    x0, y0, z0 = load(ifnames[0])
+    x1, y1, z1 = load(ifnames[1])
     y = np.abs(y1 - y0)
+    z = np.abs(z1 - z0)
     fig = pyplot.figure()
     ax = fig.add_subplot(111)
-    ax.plot(x0, y, color="#FF0000")
+    ax.plot(x0, y, color="#FF0000", label="velocity")
+    ax.plot(x0, z, color="#0000FF", label="scalar")
     kwrds = {
             "title": "",
             "xlabel": "Time",
@@ -31,6 +34,7 @@ if __name__ == "__main__":
             "yscale": "log",
     }
     ax.set(**kwrds)
+    ax.legend()
     pyplot.savefig(ofname)
     pyplot.close()
 

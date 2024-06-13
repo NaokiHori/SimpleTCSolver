@@ -10,6 +10,7 @@
 #if NDIMS == 3
 #include "array_macros/fluid/uz.h"
 #endif
+#include "array_macros/fluid/t.h"
 #include "internal.h"
 
 /**
@@ -25,7 +26,7 @@ int logging_check_total_energy(
     const domain_t * domain,
     const double time,
     const fluid_t * fluid
-){
+) {
   const int root = 0;
   int myrank = root;
   MPI_Comm comm_cart = MPI_COMM_NULL;
@@ -43,19 +44,20 @@ int logging_check_total_energy(
 #if NDIMS == 3
   const double * restrict uz = fluid->uz.data;
 #endif
-  // velocity for each dimension
-  double quantities[NDIMS] = {0.};
+  const double * restrict t = fluid->t.data;
+  // velocity for each dimension and scalar
+  double quantities[NDIMS + 1] = {0.};
   // compute quadratic quantity in x direction
 #if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 2; i <= isize; i++){
+  for (int j = 1; j <= jsize; j++) {
+    for (int i = 2; i <= isize; i++) {
       quantities[0] += JDXF(i  ) * 0.5 * pow(UX(i, j), 2.);
     }
   }
 #else
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 2; i <= isize; i++){
+  for (int k = 1; k <= ksize; k++) {
+    for (int j = 1; j <= jsize; j++) {
+      for (int i = 2; i <= isize; i++) {
         quantities[0] += JDXF(i  ) * 0.5 * pow(UX(i, j, k), 2.);
       }
     }
@@ -63,15 +65,15 @@ int logging_check_total_energy(
 #endif
   // compute quadratic quantity in y direction
 #if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
+  for (int j = 1; j <= jsize; j++) {
+    for (int i = 1; i <= isize; i++) {
       quantities[1] += JDXC(i  ) * 0.5 * pow(UY(i, j), 2.);
     }
   }
 #else
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 1; i <= isize; i++){
+  for (int k = 1; k <= ksize; k++) {
+    for (int j = 1; j <= jsize; j++) {
+      for (int i = 1; i <= isize; i++) {
         quantities[1] += JDXC(i  ) * 0.5 * pow(UY(i, j, k), 2.);
       }
     }
@@ -79,25 +81,43 @@ int logging_check_total_energy(
 #endif
 #if NDIMS == 3
   // compute quadratic quantity in z direction
-  for(int k = 1; k <= ksize; k++){
-    for(int j = 1; j <= jsize; j++){
-      for(int i = 1; i <= isize; i++){
+  for (int k = 1; k <= ksize; k++) {
+    for (int j = 1; j <= jsize; j++) {
+      for (int i = 1; i <= isize; i++) {
         quantities[2] += JDXC(i  ) * 0.5 * pow(UZ(i, j, k), 2.);
       }
     }
   }
 #endif
+  // compute quadratic quantity of scalar
+#if NDIMS == 2
+  for (int j = 1; j <= jsize; j++) {
+    for (int i = 1; i <= isize; i++) {
+      quantities[NDIMS] += JDXC(i  ) * 0.5 * pow(T(i, j), 2.);
+    }
+  }
+#else
+  for (int k = 1; k <= ksize; k++) {
+    for (int j = 1; j <= jsize; j++) {
+      for (int i = 1; i <= isize; i++) {
+        quantities[NDIMS] += JDXC(i  ) * 0.5 * pow(T(i, j, k), 2.);
+      }
+    }
+  }
+#endif
+  // output information
+  const size_t nitems = sizeof(quantities) / sizeof(quantities[0]);
   const void * sendbuf = root == myrank ? MPI_IN_PLACE : quantities;
   void * recvbuf = quantities;
-  MPI_Reduce(sendbuf, recvbuf, NDIMS, MPI_DOUBLE, MPI_SUM, root, comm_cart);
-  if(root == myrank){
+  MPI_Reduce(sendbuf, recvbuf, nitems, MPI_DOUBLE, MPI_SUM, root, comm_cart);
+  if (root == myrank) {
     FILE * fp = fileio.fopen(fname, "a");
-    if(NULL == fp){
+    if (NULL == fp) {
       return 1;
     }
     fprintf(fp, "%8.2f ", time);
-    for(int n = 0; n < NDIMS; n++){
-      fprintf(fp, "% 18.15e%c", quantities[n], NDIMS - 1 == n ? '\n' : ' ');
+    for (size_t n = 0; n < nitems; n++) {
+      fprintf(fp, "% 18.15e%c", quantities[n], nitems - 1 == n ? '\n' : ' ');
     }
     fileio.fclose(fp);
   }
