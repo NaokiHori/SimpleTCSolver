@@ -72,10 +72,12 @@ int domain_save(
   if(root != myrank){
     return 0;
   }
+  const bool is_curved = domain->is_curved;
   const size_t * glsizes = domain->glsizes;
   const double * lengths = domain->lengths;
   const double * xf      = domain->xf;
   const double * xc      = domain->xc;
+  fileio.w_serial(dirname, "is_curved", 0, NULL, fileio.npy_bool, sizeof(bool), &is_curved);
   fileio.w_serial(dirname, "glsizes", 1, (size_t [1]){NDIMS}, fileio.npy_size_t, sizeof(size_t), glsizes);
   fileio.w_serial(dirname, "lengths", 1, (size_t [1]){NDIMS}, fileio.npy_double, sizeof(double), lengths);
   fileio.w_serial(dirname, "xf", 1, (size_t [1]){glsizes[0] + 1}, fileio.npy_double, sizeof(double), xf);

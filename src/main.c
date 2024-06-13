@@ -12,26 +12,6 @@
 #include "config.h"
 #include "fileio.h"
 
-static int save_entrypoint(
-    const domain_t * domain,
-    const size_t step,
-    const double time,
-    const fluid_t * fluid
-){
-  char * dirname = NULL;
-  save.prepare(domain, step, &dirname);
-  const int root = 0;
-  int myrank = root;
-  sdecomp.get_comm_rank(domain->info, &myrank);
-  if(root == myrank){
-    fileio.w_serial(dirname, "step", 0, NULL, fileio.npy_size_t, sizeof(size_t), &step);
-    fileio.w_serial(dirname, "time", 0, NULL, fileio.npy_double, sizeof(double), &time);
-  }
-  domain_save(dirname, domain);
-  fluid_save(dirname, domain, fluid);
-  return 0;
-}
-
 /**
  * @brief main function
  * @param[in] argc : number of arguments (expect 2)
@@ -129,7 +109,7 @@ int main(
     }
     // save flow fields regularly
     if(save.get_next_time() < time){
-      save_entrypoint(&domain, step, time, &fluid);
+      save.output(&domain, step, time, &fluid);
     }
     // collect statistics regularly
     if(statistics.get_next_time() < time){
@@ -138,7 +118,7 @@ int main(
   }
   // finalisation
   // save final flow fields
-  save_entrypoint(&domain, step, time, &fluid);
+  save.output(&domain, step, time, &fluid);
   // save collected statistics
   statistics.output(&domain, step);
   // finalise MPI
