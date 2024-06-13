@@ -50,7 +50,7 @@ do
   Re=1.e16 \
   Pr=1.e0 \
   mpirun -n 2 --oversubscribe ./a.out dirname_ic
-  mv output/log/energy.dat ./energy-${factor}.dat
+  mv output/log/total_energy.dat ./energy-${factor}.dat
 done
 
 # post process

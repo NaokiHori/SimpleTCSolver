@@ -22,4 +22,11 @@ extern int logging_check_dissipation(
     const fluid_t * fluid
 );
 
+extern int logging_check_total_energy(
+    const char fname[],
+    const domain_t * domain,
+    const double time,
+    const fluid_t * fluid
+);
+
 #endif // LOGGING_INTERNAL_H

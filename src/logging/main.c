@@ -92,10 +92,11 @@ static void check_and_output(
     const double wtime,
     const fluid_t * fluid
 ){
-  show_progress            ("output/log/progress.dat",    domain, time, step, dt, wtime);
-  logging_check_divergence ("output/log/divergence.dat",  domain, time, fluid);
-  logging_check_injection  ("output/log/injection.dat",   domain, time, fluid);
-  logging_check_dissipation("output/log/dissipation.dat", domain, time, fluid);
+  show_progress             ("output/log/progress.dat",     domain, time, step, dt, wtime);
+  logging_check_divergence  ("output/log/divergence.dat",   domain, time, fluid);
+  logging_check_injection   ("output/log/injection.dat",    domain, time, fluid);
+  logging_check_dissipation ("output/log/dissipation.dat",  domain, time, fluid);
+  logging_check_total_energy("output/log/total_energy.dat", domain, time, fluid);
   g_next += g_rate;
 }
 
