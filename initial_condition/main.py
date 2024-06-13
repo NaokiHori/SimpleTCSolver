@@ -9,6 +9,9 @@ rng = np.random.default_rng()
 def get_is_curved():
     truish_list = ["True", "true"]
     is_curved = os.environ.get("is_curved")
+    if None == is_curved:
+        print("is_curved is not given")
+        sys.exit(1)
     if is_curved in truish_list:
         return True
     else:

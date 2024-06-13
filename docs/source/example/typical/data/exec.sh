@@ -6,6 +6,7 @@ set -x
 # set initial condition, model half cylinder
 cd initial_condition
 make output && make datadel
+is_curved=true \
 lx=1.0e+0 \
 ly=0.39269908169872414 \
 lz=2.0e+0 \
