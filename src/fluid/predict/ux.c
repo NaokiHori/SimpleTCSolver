@@ -15,13 +15,17 @@
 #include "array_macros/domain/jdxc.h"
 #include "array_macros/fluid/ux.h"
 #include "array_macros/fluid/uy.h"
+#if NDIMS == 3
 #include "array_macros/fluid/uz.h"
+#endif
 #include "array_macros/fluid/p.h"
 #include "array_macros/fluid/lyx1.h"
 #include "array_macros/fluid/lxy.h"
 #include "array_macros/fluid/lyy0.h"
 #include "array_macros/fluid/lyy1.h"
+#if NDIMS == 3
 #include "array_macros/fluid/lxz.h"
+#endif
 
 static laplacians_t laplacians = {
   .is_initialised = false,
