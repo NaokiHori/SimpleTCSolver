@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include "array.h"
 #include "domain.h"
 #include "halo.h"
@@ -19,7 +18,7 @@ int compute_lyz(
   const double * restrict uz = fluid->uz.data;
   array_t * lyz_array = &fluid->lyz;
   double * restrict lyz = lyz_array->data;
-  // compute lyz | 11
+  // compute lyz
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -43,4 +42,3 @@ int compute_lyz(
   }
   return 0;
 }
-#endif

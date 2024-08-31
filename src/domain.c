@@ -85,7 +85,6 @@ int domain_save(
   return 0;
 }
 
-#if NDIMS == 3
 static int get_ndigits(
     int num
 ){
@@ -102,9 +101,7 @@ static int get_ndigits(
   }
   return retval;
 }
-#endif
 
-#if NDIMS == 3
 // optimise MPI domain decomposition,
 //   i.e. minimise all-to-all time
 static int optimise_sdecomp_init(
@@ -258,7 +255,6 @@ static int optimise_sdecomp_init(
   }
   return 0;
 }
-#endif
 
 static double * allocate_and_init_hxxf(
     const int isize,
@@ -269,7 +265,7 @@ static double * allocate_and_init_hxxf(
   assert(HXXF_NADDS[0] == 0);
   assert(HXXF_NADDS[1] == 1);
   double * hxxf = memory_calloc(isize + HXXF_NADDS[0] + HXXF_NADDS[1], sizeof(double));
-  // x scale factors at x cell faces | 3
+  // x scale factors at x cell faces
   for(int i = 1; i <= isize + 1; i++){
     HXXF(i  ) = XC(i  ) - XC(i-1);
   }
@@ -285,7 +281,7 @@ static double * allocate_and_init_hxxc(
   assert(HXXC_NADDS[0] == 1);
   assert(HXXC_NADDS[1] == 1);
   double * hxxc = memory_calloc(isize + HXXC_NADDS[0] + HXXC_NADDS[1], sizeof(double));
-  // x scale factors at x cell centers | 5
+  // x scale factors at x cell centers
   HXXC(        0) = 0.5 * XF(        2) - 0.5 * XF(    1);
   for(int i = 1; i <= isize; i++){
     HXXC(i  ) = XF(i+1) - XF(i  );
@@ -304,7 +300,7 @@ static double * allocate_and_init_hyxf(
   assert(HYXF_NADDS[0] == 0);
   assert(HYXF_NADDS[1] == 1);
   double * hyxf = memory_calloc(isize + HYXF_NADDS[0] + HYXF_NADDS[1], sizeof(double));
-  // y scale factors at x cell faces | 3
+  // y scale factors at x cell faces
   for(int i = 1; i <= isize + 1; i++){
     HYXF(i  ) = is_curved ? XF(i  ) * ly / ny : ly / ny;
   }
@@ -321,29 +317,13 @@ static double * allocate_and_init_hyxc(
   assert(HYXC_NADDS[0] == 1);
   assert(HYXC_NADDS[1] == 1);
   double * hyxc = memory_calloc(isize + HYXC_NADDS[0] + HYXC_NADDS[1], sizeof(double));
-  // y scale factors at x cell centers | 3
+  // y scale factors at x cell centers
   for(int i = 0; i <= isize + 1; i++){
     HYXC(i  ) = is_curved ? XC(i  ) * ly / ny : ly / ny;
   }
   return hyxc;
 }
 
-#if NDIMS == 2
-static double * allocate_and_init_jdxf(
-    const int isize,
-    const double * hxxf,
-    const double * hyxf
-){
-  assert(JDXF_NADDS[0] == 0);
-  assert(JDXF_NADDS[1] == 1);
-  double * jdxf = memory_calloc(isize + JDXF_NADDS[0] + JDXF_NADDS[1], sizeof(double));
-  // jacobian determinants at x cell faces | 3
-  for(int i = 1; i <= isize + 1; i++){
-    JDXF(i  ) = HXXF(i  ) * HYXF(i  );
-  }
-  return jdxf;
-}
-#else
 static double * allocate_and_init_jdxf(
     const int isize,
     const double * hxxf,
@@ -353,30 +333,13 @@ static double * allocate_and_init_jdxf(
   assert(JDXF_NADDS[0] == 0);
   assert(JDXF_NADDS[1] == 1);
   double * jdxf = memory_calloc(isize + JDXF_NADDS[0] + JDXF_NADDS[1], sizeof(double));
-  // jacobian determinants at x cell faces | 3
+  // jacobian determinants at x cell faces
   for(int i = 1; i <= isize + 1; i++){
     JDXF(i  ) = HXXF(i  ) * HYXF(i  ) * hz;
   }
   return jdxf;
 }
-#endif
 
-#if NDIMS == 2
-static double * allocate_and_init_jdxc(
-    const int isize,
-    const double * hxxc,
-    const double * hyxc
-){
-  assert(JDXC_NADDS[0] == 1);
-  assert(JDXC_NADDS[1] == 1);
-  double * jdxc = memory_calloc(isize + JDXC_NADDS[0] + JDXC_NADDS[1], sizeof(double));
-  // jacobian determinants at x cell centers | 3
-  for(int i = 0; i <= isize + 1; i++){
-    JDXC(i  ) = HXXC(i  ) * HYXC(i  );
-  }
-  return jdxc;
-}
-#else
 static double * allocate_and_init_jdxc(
     const int isize,
     const double * hxxc,
@@ -386,13 +349,12 @@ static double * allocate_and_init_jdxc(
   assert(JDXC_NADDS[0] == 1);
   assert(JDXC_NADDS[1] == 1);
   double * jdxc = memory_calloc(isize + JDXC_NADDS[0] + JDXC_NADDS[1], sizeof(double));
-  // jacobian determinants at x cell centers | 3
+  // jacobian determinants at x cell centers
   for(int i = 0; i <= isize + 1; i++){
     JDXC(i  ) = HXXC(i  ) * HYXC(i  ) * hz;
   }
   return jdxc;
 }
-#endif
 
 static void report(
     const domain_t * domain
@@ -442,9 +404,7 @@ int domain_init(
   double * restrict * hxxc  = &domain->hxxc;
   double * restrict * hyxf  = &domain->hyxf;
   double * restrict * hyxc  = &domain->hyxc;
-#if NDIMS == 3
   double * restrict   hz    = &domain->hz;
-#endif
   // load spatial information
   if(0 != domain_load(dirname_ic, domain)){
     return 1;
@@ -454,31 +414,14 @@ int domain_init(
   *hxxc = allocate_and_init_hxxc(glsizes[0], *xf);
   *hyxf = allocate_and_init_hyxf(*is_curved, glsizes[0], *xf, lengths[1], glsizes[1]);
   *hyxc = allocate_and_init_hyxc(*is_curved, glsizes[0], *xc, lengths[1], glsizes[1]);
-#if NDIMS == 3
   *hz = lengths[2] / glsizes[2];
-#endif
   // Jacobian determinants at x cell faces and centers
-#if NDIMS == 2
-  *jdxf = allocate_and_init_jdxf(glsizes[0], *hxxf, *hyxf);
-  *jdxc = allocate_and_init_jdxc(glsizes[0], *hxxc, *hyxc);
-#else
   *jdxf = allocate_and_init_jdxf(glsizes[0], *hxxf, *hyxf, *hz);
   *jdxc = allocate_and_init_jdxc(glsizes[0], *hxxc, *hyxc, *hz);
-#endif
-#if NDIMS == 2
-  if(0 != sdecomp.construct(
-        MPI_COMM_WORLD,
-        NDIMS,
-        (size_t [NDIMS]){0, 0},
-        (bool [NDIMS]){false, true},
-        info
-  )) return 1;
-#else
   if(0 != optimise_sdecomp_init(
         glsizes,
         info
   )) return 1;
-#endif
   // local array sizes and offsets
   for(size_t dim = 0; dim < NDIMS; dim++){
     sdecomp.get_pencil_mysize(*info, SDECOMP_X1PENCIL, dim, glsizes[dim], mysizes + dim);

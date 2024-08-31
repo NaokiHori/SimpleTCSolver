@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include "param.h"
 #include "array.h"
 #include "domain.h"
@@ -45,4 +44,3 @@ int fluid_update_boundaries_uz(
   }
   return 0;
 }
-#endif

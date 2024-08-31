@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include "array.h"
 #include "domain.h"
 #include "halo.h"
@@ -18,7 +17,7 @@ int compute_lzy(
   const double * restrict uy = fluid->uy.data;
   array_t * lzy_array = &fluid->lzy;
   double * restrict lzy = lzy_array->data;
-  // compute lzy | 10
+  // compute lzy
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -41,4 +40,3 @@ int compute_lzy(
   }
   return 0;
 }
-#endif

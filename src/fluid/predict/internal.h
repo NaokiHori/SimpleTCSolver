@@ -16,9 +16,7 @@ typedef struct {
   bool is_initialised;
   laplacian_t * restrict lapx;
   laplacian_t * restrict lapy;
-#if NDIMS == 3
   laplacian_t lapz;
-#endif
 } laplacians_t;
 
 extern int compute_lxx(
@@ -31,12 +29,10 @@ extern int compute_lxy(
     fluid_t * fluid
 );
 
-#if NDIMS == 3
 extern int compute_lxz(
     const domain_t * domain,
     fluid_t * fluid
 );
-#endif
 
 extern int compute_lyx(
     const domain_t * domain,
@@ -48,33 +44,25 @@ extern int compute_lyy(
     fluid_t * fluid
 );
 
-#if NDIMS == 3
 extern int compute_lyz(
     const domain_t * domain,
     fluid_t * fluid
 );
-#endif
 
-#if NDIMS == 3
 extern int compute_lzx(
     const domain_t * domain,
     fluid_t * fluid
 );
-#endif
 
-#if NDIMS == 3
 extern int compute_lzy(
     const domain_t * domain,
     fluid_t * fluid
 );
-#endif
 
-#if NDIMS == 3
 extern int compute_lzz(
     const domain_t * domain,
     fluid_t * fluid
 );
-#endif
 
 extern int compute_rhs_ux(
     const domain_t * domain,
@@ -86,12 +74,10 @@ extern int compute_rhs_uy(
     fluid_t * fluid
 );
 
-#if NDIMS == 3
 extern int compute_rhs_uz(
     const domain_t * domain,
     fluid_t * fluid
 );
-#endif
 
 extern int compute_rhs_t(
     const domain_t * domain,
@@ -112,14 +98,12 @@ extern int update_uy(
     fluid_t * fluid
 );
 
-#if NDIMS == 3
 extern int update_uz(
     const domain_t * domain,
     const size_t rkstep,
     const double dt,
     fluid_t * fluid
 );
-#endif
 
 extern int update_t(
     const domain_t * domain,
@@ -140,12 +124,10 @@ extern int solve_in_y(
     linear_system_t * linear_system
 );
 
-#if NDIMS == 3
 extern int solve_in_z(
     const double prefactor,
     const laplacian_t * lapz,
     linear_system_t * linear_system
 );
-#endif
 
 #endif // FLUID_INTEGRATE_INTERNAL

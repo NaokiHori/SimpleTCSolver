@@ -11,9 +11,7 @@ int solve_in_x(
   const size_t * mysizes = linear_system->x1pncl_mysizes;
   const size_t isize = mysizes[0];
   const size_t jsize = mysizes[1];
-#if NDIMS == 3
   const size_t ksize = mysizes[2];
-#endif
   tdm_info_t * tdm_info = linear_system->tdm_x;
   int tdm_size = 0;
   double * restrict tdm_l = NULL;
@@ -25,16 +23,6 @@ int solve_in_x(
   tdm.get_u(tdm_info, &tdm_u);
   assert((size_t)tdm_size == isize);
   double * restrict x1pncl = linear_system->x1pncl;
-#if NDIMS == 2
-  for(size_t j = 0; j < jsize; j++){
-    for(size_t i = 0; i < isize; i++){
-      tdm_l[i] =    - prefactor * lapx[i].l;
-      tdm_c[i] = 1. - prefactor * lapx[i].c;
-      tdm_u[i] =    - prefactor * lapx[i].u;
-    }
-    tdm.solve(tdm_info, x1pncl + j * isize);
-  }
-#else
   for(size_t k = 0; k < ksize; k++){
     for(size_t j = 0; j < jsize; j++){
       for(size_t i = 0; i < isize; i++){
@@ -45,7 +33,6 @@ int solve_in_x(
       tdm.solve(tdm_info, x1pncl + (k * jsize + j) * isize);
     }
   }
-#endif
   return 0;
 }
 
@@ -57,9 +44,7 @@ int solve_in_y(
   const size_t * mysizes = linear_system->y1pncl_mysizes;
   const size_t isize = mysizes[0];
   const size_t jsize = mysizes[1];
-#if NDIMS == 3
   const size_t ksize = mysizes[2];
-#endif
   tdm_info_t * tdm_info = linear_system->tdm_y;
   int tdm_size = 0;
   double * restrict tdm_l = NULL;
@@ -71,16 +56,6 @@ int solve_in_y(
   tdm.get_u(tdm_info, &tdm_u);
   assert((size_t)tdm_size == jsize);
   double * restrict y1pncl = linear_system->y1pncl;
-#if NDIMS == 2
-  for(size_t i = 0; i < isize; i++){
-    for(size_t j = 0; j < jsize; j++){
-      tdm_l[j] =    - prefactor * lapy[i].l;
-      tdm_c[j] = 1. - prefactor * lapy[i].c;
-      tdm_u[j] =    - prefactor * lapy[i].u;
-    }
-    tdm.solve(tdm_info, y1pncl + i * jsize);
-  }
-#else
   for(size_t i = 0; i < isize; i++){
     for(size_t k = 0; k < ksize; k++){
       for(size_t j = 0; j < jsize; j++){
@@ -91,11 +66,9 @@ int solve_in_y(
       tdm.solve(tdm_info, y1pncl + (i * ksize + k) * jsize);
     }
   }
-#endif
   return 0;
 }
 
-#if NDIMS == 3
 int solve_in_z(
     const double prefactor,
     const laplacian_t * lapz,
@@ -128,5 +101,4 @@ int solve_in_z(
   }
   return 0;
 }
-#endif
 
