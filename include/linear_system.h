@@ -29,9 +29,6 @@ typedef struct {
   double * restrict z2pncl;
   size_t x1pncl_mysizes[NDIMS];
   size_t y1pncl_mysizes[NDIMS];
-#if NDIMS == 3
-  size_t z2pncl_mysizes[NDIMS];
-#endif
   tdm_info_t * tdm_x;
   tdm_info_t * tdm_y;
   tdm_info_t * tdm_z;

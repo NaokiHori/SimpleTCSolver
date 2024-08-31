@@ -11,9 +11,6 @@
 // flags to specify the diffusive treatment of the momentum equations
 extern const bool param_implicit_x;
 extern const bool param_implicit_y;
-#if NDIMS == 3
-extern const bool param_implicit_z;
-#endif
 
 /* boundary-condition.c */
 // NOTE: impermeable walls and Neumann BC for the pressure are unchangeable
