@@ -31,9 +31,7 @@ typedef struct {
   double * restrict jdxf, * restrict jdxc;
   double * restrict hxxf, * restrict hxxc;
   double * restrict hyxf, * restrict hyxc;
-#if NDIMS == 3
   double hz;
-#endif
 } domain_t;
 
 // constructor

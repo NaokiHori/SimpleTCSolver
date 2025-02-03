@@ -39,30 +39,22 @@ int linear_system_init(
   // pencils (and their sizes) to store input and output of linear systems
   double * restrict * x1pncl = &linear_system->x1pncl;
   double * restrict * y1pncl = &linear_system->y1pncl;
-#if NDIMS == 3
   double * restrict * z2pncl = &linear_system->z2pncl;
-#endif
   // check size first
   size_t * x1pncl_mysizes = linear_system->x1pncl_mysizes;
   size_t * y1pncl_mysizes = linear_system->y1pncl_mysizes;
-#if NDIMS == 3
   size_t * z2pncl_mysizes = linear_system->z2pncl_mysizes;
-#endif
   for(int dim = 0; dim < NDIMS; dim++){
     if(0 != sdecomp.get_pencil_mysize(info, SDECOMP_X1PENCIL, dim, glsizes[dim], x1pncl_mysizes + dim)) return 1;
     if(0 != sdecomp.get_pencil_mysize(info, SDECOMP_Y1PENCIL, dim, glsizes[dim], y1pncl_mysizes + dim)) return 1;
-#if NDIMS == 3
     if(0 != sdecomp.get_pencil_mysize(info, SDECOMP_Z2PENCIL, dim, glsizes[dim], z2pncl_mysizes + dim)) return 1;
-#endif
   }
   // allocate pencils if needed
   // NOTE: x1pncl is not needed for fully-explicit case,
   //   but I always allocate it here for simplicity (to store delta values)
   *x1pncl =               memory_calloc(get_nitems(x1pncl_mysizes), sizeof(double));
   *y1pncl = implicit[1] ? memory_calloc(get_nitems(y1pncl_mysizes), sizeof(double)) : NULL;
-#if NDIMS == 3
   *z2pncl = implicit[2] ? memory_calloc(get_nitems(z2pncl_mysizes), sizeof(double)) : NULL;
-#endif
   // initialise parallel matrix transpose if needed
   // between x1 and y1
   if(implicit[1]){
@@ -71,7 +63,6 @@ int linear_system_init(
     if(0 != sdecomp.transpose.construct(info, SDECOMP_X1PENCIL, SDECOMP_Y1PENCIL, glsizes, sizeof(double), plan_f)) return 1;
     if(0 != sdecomp.transpose.construct(info, SDECOMP_Y1PENCIL, SDECOMP_X1PENCIL, glsizes, sizeof(double), plan_b)) return 1;
   }
-#if NDIMS == 3
   // between x1 and z2
   if(implicit[2]){
     sdecomp_transpose_plan_t ** plan_f = &linear_system->transposer_x1_to_z2;
@@ -79,7 +70,6 @@ int linear_system_init(
     if(0 != sdecomp.transpose.construct(info, SDECOMP_X1PENCIL, SDECOMP_Z2PENCIL, glsizes, sizeof(double), plan_f)) return 1;
     if(0 != sdecomp.transpose.construct(info, SDECOMP_Z2PENCIL, SDECOMP_X1PENCIL, glsizes, sizeof(double), plan_b)) return 1;
   }
-#endif
   // initialise tri-diagonal matrix solvers
   // Thomas algorithm in x direction
   if(implicit[0]){
@@ -101,7 +91,6 @@ int linear_system_init(
         /* output         */ &linear_system->tdm_y
     )) return 1;
   }
-#if NDIMS == 3
   // Thomas algorithm in z direction
   if(implicit[2]){
     if(0 != tdm.construct(
@@ -112,7 +101,6 @@ int linear_system_init(
         /* output         */ &linear_system->tdm_z
     )) return 1;
   }
-#endif
   linear_system->is_initialised = true;
   return 0;
 }
@@ -134,14 +122,12 @@ int linear_system_finalise(
     sdecomp.transpose.destruct(linear_system->transposer_y1_to_x1);
     tdm.destruct(linear_system->tdm_y);
   }
-#if NDIMS == 3
   if(implicit[2]){
     memory_free(linear_system->z2pncl);
     sdecomp.transpose.destruct(linear_system->transposer_x1_to_z2);
     sdecomp.transpose.destruct(linear_system->transposer_z2_to_x1);
     tdm.destruct(linear_system->tdm_z);
   }
-#endif
   return 0;
 }
 

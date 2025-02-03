@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include "domain.h"
 #include "fluid.h"
 #include "fluid_solver.h"
@@ -24,7 +23,7 @@ int fluid_correct_velocity_uz(
   const double hz = domain->hz;
   const double * restrict psi = fluid->psi.data;
   double * restrict uz = fluid->uz.data;
-  // correct z velocity | 12
+  // correct z velocity
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -43,4 +42,3 @@ int fluid_correct_velocity_uz(
   }
   return 0;
 }
-#endif

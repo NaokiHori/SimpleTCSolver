@@ -15,9 +15,7 @@
 #include "array_macros/domain/hyxc.h"
 #include "array_macros/fluid/ux.h"
 #include "array_macros/fluid/uy.h"
-#if NDIMS == 3
 #include "array_macros/fluid/uz.h"
-#endif
 
 // overriden later using environment variables
 static bool coefs_are_initialised = false;
@@ -40,37 +38,17 @@ static int decide_dt_adv(
   sdecomp.get_comm_cart(domain->info, &comm_cart);
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict hxxf = domain->hxxf;
   const double * restrict hyxc = domain->hyxc;
-#if NDIMS == 3
   const double hz = domain->hz;
-#endif
   const double * restrict ux = fluid->ux.data;
   const double * restrict uy = fluid->uy.data;
-#if NDIMS == 3
   const double * restrict uz = fluid->uz.data;
-#endif
   // sufficiently small number to avoid zero division
   const double small = 1.e-8;
   // max possible dt
   *dt = 1.;
-#if NDIMS == 2
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 2; i <= isize; i++){
-      const double vel = fabs(UX(i, j)) + small;
-      *dt = fmin(*dt, HXXF(i  ) / vel);
-    }
-  }
-  for(int j = 1; j <= jsize; j++){
-    for(int i = 1; i <= isize; i++){
-      const double vel = fabs(UY(i, j)) + small;
-      *dt = fmin(*dt, HYXC(i  ) / vel);
-    }
-  }
-#else
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 2; i <= isize; i++){
@@ -95,7 +73,6 @@ static int decide_dt_adv(
       }
     }
   }
-#endif
   // unify result, multiply safety factor
   MPI_Allreduce(MPI_IN_PLACE, dt, 1, MPI_DOUBLE, MPI_MIN, comm_cart);
   *dt *= coef_dt_adv;
@@ -117,9 +94,7 @@ static int decide_dt_dif(
   const int isize = domain->mysizes[0];
   const double * restrict hxxc = domain->hxxc;
   const double * restrict hyxc = domain->hyxc;
-#if NDIMS == 3
   const double hz = domain->hz;
-#endif
   const double diffusivity = fmax(
       fluid_compute_momentum_diffusivity(fluid),
       fluid_compute_scalar_diffusivity(fluid)
@@ -131,9 +106,7 @@ static int decide_dt_dif(
     grid_sizes[0] = fmin(grid_sizes[0], HXXC(i));
   }
   grid_sizes[1] = HYXC(1);
-#if NDIMS == 3
   grid_sizes[2] = hz;
-#endif
   // compute diffusive constraints
   for(int dim = 0; dim < NDIMS; dim++){
     dt[dim] = coef_dt_dif / diffusivity * 0.5 / NDIMS * pow(grid_sizes[dim], 2.);
@@ -180,11 +153,9 @@ int decide_dt(
   if(!param_implicit_y){
     *dt = fmin(*dt, dt_dif[1]);
   }
-#if NDIMS == 3
   if(!param_implicit_z){
     *dt = fmin(*dt, dt_dif[2]);
   }
-#endif
   return 0;
 }
 

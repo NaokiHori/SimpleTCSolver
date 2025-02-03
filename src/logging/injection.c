@@ -13,19 +13,12 @@
 #include "array_macros/fluid/lxy.h"
 #include "internal.h"
 
-#if NDIMS == 2
-#define BEGIN \
-  for(int j = 1; j <= jsize; j++){
-#define END \
-  }
-#else
 #define BEGIN \
   for(int k = 1; k <= ksize; k++){ \
     for(int j = 1; j <= jsize; j++){
 #define END \
     } \
   }
-#endif
 
 /**
  * @brief compute injected energy
@@ -48,9 +41,7 @@ int logging_check_injection(
   sdecomp.get_comm_cart(domain->info, &comm_cart);
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict hxxf = domain->hxxf;
   const double * restrict jdxf = domain->jdxf;
   const double * restrict uy = fluid->uy.data;
@@ -66,16 +57,6 @@ int logging_check_injection(
     const double hx_xp = HXXF(isize+1);
     const double jd_xm = JDXF(      1);
     const double jd_xp = JDXF(isize+1);
-#if NDIMS == 2
-    const double lyx0_xm = LYX0(      1, j);
-    const double lyx0_xp = LYX0(isize+1, j);
-    const double lyx1_xm = LYX1(      1, j);
-    const double lyx1_xp = LYX1(isize+1, j);
-    const double lxy_xm  = LXY(      1, j);
-    const double lxy_xp  = LXY(isize+1, j);
-    const double uy_xm = UY(      0, j);
-    const double uy_xp = UY(isize+1, j);
-#else
     const double lyx0_xm = LYX0(      1, j, k);
     const double lyx0_xp = LYX0(isize+1, j, k);
     const double lyx1_xm = LYX1(      1, j, k);
@@ -84,7 +65,6 @@ int logging_check_injection(
     const double lxy_xp  = LXY(isize+1, j, k);
     const double uy_xm = UY(      0, j, k);
     const double uy_xp = UY(isize+1, j, k);
-#endif
     const double tyx_xm = lyx0_xm + lyx1_xm + lxy_xm;
     const double tyx_xp = lyx0_xp + lyx1_xp + lxy_xp;
     values[0] +=
@@ -97,17 +77,10 @@ int logging_check_injection(
     const double hx_xp = HXXF(isize+1);
     const double jd_xm = JDXF(      1);
     const double jd_xp = JDXF(isize+1);
-#if NDIMS == 2
-    const double t_xm = T(      0, j);
-    const double t_xp = T(isize+1, j);
-    const double dt_xm = - T(    0, j) + T(      1, j);
-    const double dt_xp = - T(isize, j) + T(isize+1, j);
-#else
     const double t_xm = T(      0, j, k);
     const double t_xp = T(isize+1, j, k);
     const double dt_xm = - T(    0, j, k) + T(      1, j, k);
     const double dt_xp = - T(isize, j, k) + T(isize+1, j, k);
-#endif
     values[1] +=
       - jd_xm / hx_xm * t_xm / hx_xm * dt_xm
       + jd_xp / hx_xp * t_xp / hx_xp * dt_xp;

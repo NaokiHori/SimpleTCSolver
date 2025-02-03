@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include "array.h"
 #include "domain.h"
 #include "halo.h"
@@ -18,7 +17,7 @@ int compute_lzz(
   const double * restrict uz = fluid->uz.data;
   array_t * lzz_array = &fluid->lzz;
   double * restrict lzz = lzz_array->data;
-  // compute lzz | 10
+  // compute lzz
   for(int k = 1; k <= ksize; k++){
     for(int j = 1; j <= jsize; j++){
       for(int i = 1; i <= isize; i++){
@@ -41,4 +40,3 @@ int compute_lzz(
   }
   return 0;
 }
-#endif

@@ -1,4 +1,3 @@
-#if NDIMS == 3
 #include "param.h"
 #include "memory.h"
 #include "runge_kutta.h"
@@ -37,7 +36,7 @@ static int init_laplacians(
     const double * jdxf = domain->jdxf;
     const double * jdxc = domain->jdxc;
     laplacians.lapx = memory_calloc(isize, sizeof(laplacian_t));
-    // second-order derivative in x | 8
+    // second-order derivative in x
     for(size_t i = 1; i <= isize; i++){
       const double l = 1. / JDXC(i  ) * JDXF(i  ) / HXXF(i  ) / HXXF(i  );
       const double u = 1. / JDXC(i  ) * JDXF(i+1) / HXXF(i+1) / HXXF(i+1);
@@ -52,7 +51,7 @@ static int init_laplacians(
     const size_t isize = domain->glsizes[0];
     const double * hyxc = domain->hyxc;
     laplacians.lapy = memory_calloc(isize, sizeof(laplacian_t));
-    // second-order derivative in y | 8
+    // second-order derivative in y
     for(size_t i = 1; i <= isize; i++){
       const double l = 1. / HYXC(i  ) / HYXC(i  );
       const double u = 1. / HYXC(i  ) / HYXC(i  );
@@ -65,7 +64,7 @@ static int init_laplacians(
   // laplacian z
   {
     const double hz = domain->hz;
-    // second-order derivative in z | 6
+    // second-order derivative in z
     const double l = 1. / hz / hz;
     const double u = 1. / hz / hz;
     const double c = - l - u;
@@ -98,7 +97,7 @@ static int advection_x(
   const double * restrict hxxf = domain->hxxf;
   const double * restrict jdxf = domain->jdxf;
   const double * restrict jdxc = domain->jdxc;
-  // uz is advected in x | 19
+  // uz is advected in x
   BEGIN
     const double hx_xm = HXXF(i  );
     const double hx_xp = HXXF(i+1);
@@ -132,7 +131,7 @@ static int advection_y(
   const int ksize = domain->mysizes[2];
   const double * restrict hyxc = domain->hyxc;
   const double * restrict jdxc = domain->jdxc;
-  // uz is advected in y | 16
+  // uz is advected in y
   BEGIN
     const double hy = HYXC(i  );
     const double jd = JDXC(i  );
@@ -162,7 +161,7 @@ static int advection_z(
   const int ksize = domain->mysizes[2];
   const double hz = domain->hz;
   const double * restrict jdxc = domain->jdxc;
-  // uz is advected in z | 15
+  // uz is advected in z
   BEGIN
     const double jd = JDXC(i  );
     const double uz_zm = + 0.5 * jd / hz * UZ(i  , j  , k-1)
@@ -191,7 +190,7 @@ static int diffusion_x0(
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
   const laplacian_t * restrict lapx = laplacians.lapx;
-  // diffusion in x, 0 | 7
+  // diffusion in x, 0
   BEGIN
     src[cnt] += diffusivity * (
         + LAPX(i).l * UZ(i-1, j  , k  )
@@ -214,7 +213,7 @@ static int diffusion_x1(
   const double * restrict hxxf = domain->hxxf;
   const double * restrict jdxf = domain->jdxf;
   const double * restrict jdxc = domain->jdxc;
-  // diffusion in x, 1 | 13
+  // diffusion in x, 1
   BEGIN
     const double hx_xm = HXXF(i  );
     const double hx_xp = HXXF(i+1);
@@ -241,7 +240,7 @@ static int diffusion_y0(
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
   const laplacian_t * restrict lapy = laplacians.lapy;
-  // diffusion in y, 0 | 7
+  // diffusion in y, 0
   BEGIN
     src[cnt] += diffusivity * (
         + LAPY(i).l * UZ(i  , j-1, k  )
@@ -263,7 +262,7 @@ static int diffusion_y1(
   const int ksize = domain->mysizes[2];
   const double * restrict hyxc = domain->hyxc;
   const double * restrict jdxc = domain->jdxc;
-  // diffusion in y, 1 | 10
+  // diffusion in y, 1
   BEGIN
     const double hy = HYXC(i  );
     const double jd = JDXC(i  );
@@ -287,7 +286,7 @@ static int diffusion_z(
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
   const laplacian_t * restrict lapz = &laplacians.lapz;
-  // diffusion in z | 8
+  // diffusion in z
   BEGIN
     // NOTE: tzz = "2" lzz
     src[cnt] += 2. * diffusivity * (
@@ -308,7 +307,7 @@ static int pressure(
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
   const double hz = domain->hz;
-  // pressure gradient effect | 6
+  // pressure gradient effect
   BEGIN
     src[cnt] -= 1. / hz * (
         - P(i  , j  , k-1)
@@ -475,4 +474,3 @@ int update_uz(
   }
   return 0;
 }
-#endif

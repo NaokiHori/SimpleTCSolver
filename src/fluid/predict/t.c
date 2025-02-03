@@ -36,7 +36,7 @@ static int init_laplacians(
     const double * jdxf = domain->jdxf;
     const double * jdxc = domain->jdxc;
     laplacians.lapx = memory_calloc(isize, sizeof(laplacian_t));
-    // second-order derivative in x | 8
+    // second-order derivative in x
     for(size_t i = 1; i <= isize; i++){
       const double l = 1. / JDXC(i  ) * JDXF(i  ) / HXXF(i  ) / HXXF(i  );
       const double u = 1. / JDXC(i  ) * JDXF(i+1) / HXXF(i+1) / HXXF(i+1);
@@ -51,7 +51,7 @@ static int init_laplacians(
     const size_t isize = domain->glsizes[0];
     const double * hyxc = domain->hyxc;
     laplacians.lapy = memory_calloc(isize, sizeof(laplacian_t));
-    // second-order derivative in y | 8
+    // second-order derivative in y
     for(size_t i = 1; i <= isize; i++){
       const double l = 1. / HYXC(i  ) / HYXC(i  );
       const double u = 1. / HYXC(i  ) / HYXC(i  );
@@ -61,11 +61,10 @@ static int init_laplacians(
       laplacians.LAPY(i).u = u;
     }
   }
-#if NDIMS == 3
   // laplacian z
   {
     const double hz = domain->hz;
-    // second-order derivative in z | 6
+    // second-order derivative in z
     const double l = 1. / hz / hz;
     const double u = 1. / hz / hz;
     const double c = - l - u;
@@ -73,19 +72,10 @@ static int init_laplacians(
     laplacians.lapz.c = c;
     laplacians.lapz.u = u;
   }
-#endif
   laplacians.is_initialised = true;
   return 0;
 }
 
-#if NDIMS == 2
-#define BEGIN \
-  for(int cnt = 0, j = 1; j <= jsize; j++){ \
-    for(int i = 1; i <= isize; i++, cnt++){
-#define END \
-    } \
-  }
-#else
 #define BEGIN \
   for(int cnt = 0, k = 1; k <= ksize; k++){ \
     for(int j = 1; j <= jsize; j++){ \
@@ -94,7 +84,6 @@ static int init_laplacians(
       } \
     } \
   }
-#endif
 
 static int advection_x(
     const domain_t * domain,
@@ -104,39 +93,26 @@ static int advection_x(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict hxxf = domain->hxxf;
   const double * restrict jdxf = domain->jdxf;
   const double * restrict jdxc = domain->jdxc;
-  // t is advected in x | 32
+  // t is advected in x
   BEGIN
     const double hx_xm = HXXF(i  );
     const double hx_xp = HXXF(i+1);
     const double jd_xm = JDXF(i  );
     const double jd_x0 = JDXC(i  );
     const double jd_xp = JDXF(i+1);
-#if NDIMS == 2
-    const double ux_xm = jd_xm / hx_xm * UX(i  , j  );
-    const double ux_xp = jd_xp / hx_xp * UX(i+1, j  );
-#else
     const double ux_xm = jd_xm / hx_xm * UX(i  , j  , k  );
     const double ux_xp = jd_xp / hx_xp * UX(i+1, j  , k  );
-#endif
     const double l = - 0.5 * ux_xm;
     const double u = + 0.5 * ux_xp;
     const double c = - l - u;
     src[cnt] -= 1. / jd_x0 * (
-#if NDIMS == 2
-        + l * T(i-1, j  )
-        + c * T(i  , j  )
-        + u * T(i+1, j  )
-#else
         + l * T(i-1, j  , k  )
         + c * T(i  , j  , k  )
         + u * T(i+1, j  , k  )
-#endif
     );
   END
   return 0;
@@ -150,41 +126,27 @@ static int advection_y(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const double * restrict hyxc = domain->hyxc;
   const double * restrict jdxc = domain->jdxc;
-  // t is advected in y | 29
+  // t is advected in y
   BEGIN
     const double jd = JDXC(i  );
     const double hy = HYXC(i  );
-#if NDIMS == 2
-    const double uy_ym = jd / hy * UY(i  , j  );
-    const double uy_yp = jd / hy * UY(i  , j+1);
-#else
     const double uy_ym = jd / hy * UY(i  , j  , k  );
     const double uy_yp = jd / hy * UY(i  , j+1, k  );
-#endif
     const double l = - 0.5 * uy_ym;
     const double u = + 0.5 * uy_yp;
     const double c = - l - u;
     src[cnt] -= 1. / jd * (
-#if NDIMS == 2
-        + l * T(i  , j-1)
-        + c * T(i  , j  )
-        + u * T(i  , j+1)
-#else
         + l * T(i  , j-1, k  )
         + c * T(i  , j  , k  )
         + u * T(i  , j+1, k  )
-#endif
     );
   END
   return 0;
 }
 
-#if NDIMS == 3
 static int advection_z(
     const domain_t * domain,
     const double * restrict t,
@@ -196,7 +158,7 @@ static int advection_z(
   const int ksize = domain->mysizes[2];
   const double hz = domain->hz;
   const double * restrict jdxc = domain->jdxc;
-  // t is advected in z | 15
+  // t is advected in z
   BEGIN
     const double jd = JDXC(i  );
     const double uz_zm = jd / hz * UZ(i  , j  , k  );
@@ -212,7 +174,6 @@ static int advection_z(
   END
   return 0;
 }
-#endif
 
 static int diffusion_x(
     const domain_t * domain,
@@ -222,22 +183,14 @@ static int diffusion_x(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const laplacian_t * restrict lapx = laplacians.lapx;
-  // diffusion in x, 0 | 13
+  // diffusion in x, 0
   BEGIN
     src[cnt] += diffusivity * (
-#if NDIMS == 2
-        + LAPX(i).l * T(i-1, j  )
-        + LAPX(i).c * T(i  , j  )
-        + LAPX(i).u * T(i+1, j  )
-#else
         + LAPX(i).l * T(i-1, j  , k  )
         + LAPX(i).c * T(i  , j  , k  )
         + LAPX(i).u * T(i+1, j  , k  )
-#endif
     );
   END
   return 0;
@@ -251,28 +204,19 @@ static int diffusion_y(
 ){
   const int isize = domain->mysizes[0];
   const int jsize = domain->mysizes[1];
-#if NDIMS == 3
   const int ksize = domain->mysizes[2];
-#endif
   const laplacian_t * restrict lapy = laplacians.lapy;
-  // diffusion in y, 0 | 14
+  // diffusion in y, 0
   BEGIN
     src[cnt] += diffusivity * (
-#if NDIMS == 2
-        + LAPY(i).l * T(i  , j-1)
-        + LAPY(i).c * T(i  , j  )
-        + LAPY(i).u * T(i  , j+1)
-#else
         + LAPY(i).l * T(i  , j-1, k  )
         + LAPY(i).c * T(i  , j  , k  )
         + LAPY(i).u * T(i  , j+1, k  )
-#endif
     );
   END
   return 0;
 }
 
-#if NDIMS == 3
 static int diffusion_z(
     const domain_t * domain,
     const double diffusivity,
@@ -283,7 +227,7 @@ static int diffusion_z(
   const int jsize = domain->mysizes[1];
   const int ksize = domain->mysizes[2];
   const laplacian_t * restrict lapz = &laplacians.lapz;
-  // diffusion in z, 0 | 7
+  // diffusion in z, 0
   BEGIN
     src[cnt] += diffusivity * (
         + (*lapz).l * T(i  , j  , k-1)
@@ -293,7 +237,6 @@ static int diffusion_z(
   END
   return 0;
 }
-#endif
 
 /**
  * @brief comute right-hand-side of Runge-Kutta scheme of scalar
@@ -312,9 +255,7 @@ int compute_rhs_t(
   }
   const double * restrict ux = fluid->ux.data;
   const double * restrict uy = fluid->uy.data;
-#if NDIMS == 3
   const double * restrict uz = fluid->uz.data;
-#endif
   const double * restrict  t = fluid-> t.data;
   double * restrict srca = fluid->srct[rk_a].data;
   double * restrict srcg = fluid->srct[rk_g].data;
@@ -322,15 +263,11 @@ int compute_rhs_t(
   // advective contributions, always explicit
   advection_x(domain, t, ux, srca);
   advection_y(domain, t, uy, srca);
-#if NDIMS == 3
   advection_z(domain, t, uz, srca);
-#endif
   // diffusive contributions, can be explicit or implicit
   diffusion_x(domain, diffusivity, t, param_implicit_x ? srcg : srca);
   diffusion_y(domain, diffusivity, t, param_implicit_y ? srcg : srca);
-#if NDIMS == 3
   diffusion_z(domain, diffusivity, t, param_implicit_z ? srcg : srca);
-#endif
   return 0;
 }
 
@@ -357,16 +294,12 @@ int update_t(
     const bool implicit[NDIMS] = {
       param_implicit_x,
       param_implicit_y,
-#if NDIMS == 3
       param_implicit_z,
-#endif
     };
     const size_t glsizes[NDIMS] = {
       domain->glsizes[0],
       domain->glsizes[1],
-#if NDIMS == 3
       domain->glsizes[2],
-#endif
     };
     if(0 != linear_system_init(domain->info, implicit, glsizes, &linear_system)){
       return 1;
@@ -382,15 +315,9 @@ int update_t(
     const double * restrict srctg = fluid->srct[rk_g].data;
     const int isize = domain->mysizes[0];
     const int jsize = domain->mysizes[1];
-#if NDIMS == 3
     const int ksize = domain->mysizes[2];
-#endif
     double * restrict delta = linear_system.x1pncl;
-#if NDIMS == 2
-    const size_t nitems = isize * jsize;
-#else
     const size_t nitems = isize * jsize * ksize;
-#endif
     for(size_t n = 0; n < nitems; n++){
       delta[n] =
         + coef_a * dt * srcta[n]
@@ -428,7 +355,6 @@ int update_t(
         linear_system.x1pncl
     );
   }
-#if NDIMS == 3
   // solve linear systems in z
   if(param_implicit_z){
     sdecomp.transpose.execute(
@@ -447,22 +373,15 @@ int update_t(
         linear_system.x1pncl
     );
   }
-#endif
   // the field is actually updated here
   {
     const int isize = domain->mysizes[0];
     const int jsize = domain->mysizes[1];
-#if NDIMS == 3
     const int ksize = domain->mysizes[2];
-#endif
     const double * restrict delta = linear_system.x1pncl;
     double * restrict t = fluid->t.data;
     BEGIN
-#if NDIMS == 2
-      T(i, j) += delta[cnt];
-#else
       T(i, j, k) += delta[cnt];
-#endif
     END
     if(0 != fluid_update_boundaries_t(domain, &fluid->t)){
       return 1;
