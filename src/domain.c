@@ -34,7 +34,7 @@ static int domain_load(
   double * restrict lengths = domain->lengths;
   double * restrict * restrict xf = &domain->xf;
   double * restrict * restrict xc = &domain->xc;
-  if(0 != fileio.r_serial(dirname, "is_curved", 0, NULL, fileio.npy_bool, sizeof(bool), is_curved)){
+  if(0 != fileio.r_serial(dirname, "is_curved", 0, NULL, fileio.npy_boolean, sizeof(bool), is_curved)){
     return 1;
   }
   if(0 != fileio.r_serial(dirname, "glsizes", 1, (size_t [1]){NDIMS}, fileio.npy_size_t, sizeof(size_t), glsizes)){
@@ -77,7 +77,7 @@ int domain_save(
   const double * lengths = domain->lengths;
   const double * xf      = domain->xf;
   const double * xc      = domain->xc;
-  fileio.w_serial(dirname, "is_curved", 0, NULL, fileio.npy_bool, sizeof(bool), &is_curved);
+  fileio.w_serial(dirname, "is_curved", 0, NULL, fileio.npy_boolean, sizeof(bool), &is_curved);
   fileio.w_serial(dirname, "glsizes", 1, (size_t [1]){NDIMS}, fileio.npy_size_t, sizeof(size_t), glsizes);
   fileio.w_serial(dirname, "lengths", 1, (size_t [1]){NDIMS}, fileio.npy_double, sizeof(double), lengths);
   fileio.w_serial(dirname, "xf", 1, (size_t [1]){glsizes[0] + 1}, fileio.npy_double, sizeof(double), xf);

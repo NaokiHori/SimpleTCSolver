@@ -8,8 +8,8 @@ typedef struct {
   // NPY datatypes, which are embedded in NPY files ("dtype" argument)
   // they are declared here and defined in src/fileio.c
   // NOTE: size (x-byte) may be wrong, depending on the architecture
-  // 1-byte boolena
-  const char * npy_bool;
+  // 1-byte boolean
+  const char * npy_boolean;
   // 8-byte little-endian unsigned integer
   const char * npy_size_t;
   // 8-byte little-endian floating point
