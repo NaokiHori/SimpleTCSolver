@@ -1,7 +1,7 @@
 html_theme = "alabaster"
 html_static_path = ["_static"]
 html_theme_options = {
-        "description": "Massively-parallelised NS solver for planar and curved channel flows",
+        "description": "Massively-parallelized NS solver for planar and curved channel flows",
         "fixed_sidebar": "false",
         "github_banner": "false",
         "github_button": "true",

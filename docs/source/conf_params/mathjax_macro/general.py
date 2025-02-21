@@ -20,6 +20,8 @@ def add(macros):
     # derivatives
     macros["pder"] = ["{\\frac{\\partial #1}{\\partial #2}}", 2]
     macros["dder"] = ["{\\frac{\\delta #1}{\\delta #2}}", 2]
+    macros["tder"] = ["\\frac{d #1}{d #2}", 2]
+    macros["mder"] = ["\\frac{D #1}{D t}", 1]
     # discrete operators
     macros["ave"] = ["{\\overline{#1}^{#2}}", 2]
     macros["dif"] = ["{\\delta_{#2} {#1}}", 2]

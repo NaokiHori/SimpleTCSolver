@@ -32,7 +32,7 @@ There are several terms which are characteristic of cylindrical coordinates.
 In Cartesian coordinates, these additional terms lead to zero since :math:`\sfact{2}, \sfact{3}` do not change in :math:`\gcs{1}`.
 Thus all equations, their numerical descriptions, and implementations can be unified.
 
-See `e.g., this <https://naokihori.github.io/OrthogonalNS/index.html>`_ for the derivations.
+See :ref:`e.g., the appendix <appendix>` for the derivations.
 
 *******************
 Shear-stress tensor
