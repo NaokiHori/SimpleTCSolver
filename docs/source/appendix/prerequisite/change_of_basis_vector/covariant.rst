@@ -161,10 +161,15 @@ This relation is written down explicitly below for an intuitive understanding.
 .. math::
 
    \newcommand{\diag}[1]{
+      -
       \sum_k
       \frac{H_#1}{H_k H_k}
       \pder{H_#1}{X^k}
       \vec{E}_k
+      +
+      \frac{2}{H_#1}
+      \pder{H_#1}{X^#1}
+      \vec{E}_{#1}
    }
    \newcommand{\nodiag}[2]{
       \frac{1}{H_{#1}}
@@ -181,19 +186,10 @@ This relation is written down explicitly below for an intuitive understanding.
       \pder{\vec{E}_1}{X^3} & \pder{\vec{E}_2}{X^3} & \pder{\vec{E}_3}{X^3} \\
    \end{pmatrix}
    =
-   &
-   -
    \begin{pmatrix}
-      \diag{1} & 0 & 0 \\
-      0 & \diag{2} & 0 \\
-      0 & 0 & \diag{3} \\
-   \end{pmatrix} \\
-   &
-   +
-   \begin{pmatrix}
-      0 & \nodiag{1}{2} & \nodiag{1}{3} \\
-      sym. & 0 & \nodiag{2}{3} \\
-      sym. & sym. & 0 \\
+      \diag{1}      & \nodiag{1}{2} & \nodiag{1}{3} \\
+      \nodiag{2}{1} & \diag{2}      & \nodiag{2}{3} \\
+      \nodiag{3}{1} & \nodiag{3}{2} & \diag{3}      \\
    \end{pmatrix}.
 
 *******
@@ -231,9 +227,9 @@ Rectilinear coordinates
 .. math::
 
    \begin{pmatrix}
-      - \frac{1}{H_1} \pder{H_1}{X^1} \vec{E}_1 & 0 & 0 \\
-      0 & - \frac{1}{H_2} \pder{H_2}{X^2} \vec{E}_2 & 0 \\
-      0 & 0 & - \frac{1}{H_3} \pder{H_3}{X^3} \vec{E}_3 \\
+      \frac{1}{H_1} \pder{H_1}{X^1} \vec{E}_1 & 0 & 0 \\
+      0 & \frac{1}{H_2} \pder{H_2}{X^2} \vec{E}_2 & 0 \\
+      0 & 0 & \frac{1}{H_3} \pder{H_3}{X^3} \vec{E}_3 \\
    \end{pmatrix}.
 
 ===========
@@ -243,7 +239,7 @@ Application
 .. math::
 
    \begin{pmatrix}
-      - \frac{1}{H_1} \pder{H_1}{X^1} \vec{E}_1 & \frac{1}{H_2} \pder{H_2}{X^1} \vec{E}_2 & 0 \\
+      \frac{1}{H_1} \pder{H_1}{X^1} \vec{E}_1 & \frac{1}{H_2} \pder{H_2}{X^1} \vec{E}_2 & 0 \\
       \frac{1}{H_2} \pder{H_2}{X^1} \vec{E}_2 & - \frac{H_2}{H_1 H_1} \pder{H_2}{X^1} \vec{E}_1 & 0 \\
       0 & 0 & 0 \\
    \end{pmatrix}.

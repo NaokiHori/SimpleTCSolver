@@ -122,6 +122,12 @@ In summary,
    &
    =
    \sum_i
+   \vec{E}_i
+   \frac{1}{H_i H_i}
+   \pder{}{X^i} \\
+   &
+   =
+   \sum_i
    \vec{\hat{E}}_i
    \frac{1}{H_i}
    \pder{}{X^i}.
